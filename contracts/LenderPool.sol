@@ -5,11 +5,13 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./RewardSystem.sol";
 
 contract LenderPool is Ownable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable tokenAddress;
+    RewardSystem rewardSystem;
 
     uint16 stableAPY;
     uint16 tradeAPY;
@@ -38,6 +40,10 @@ contract LenderPool is Ownable {
         startPeriod = block.timestamp;
     }
 
+    function setRewardSystemContract(address _rewardSystem) external {
+        rewardSystem = RewardSystem(_rewardSystem);
+    }
+
     function setMinimumDeposit(uint256 _minimumDeposit) external {
         minimumDeposit = _minimumDeposit;
     }
@@ -51,7 +57,8 @@ contract LenderPool is Ownable {
     }
 
     function _putAsideRewards() private {
-        stableRewardsToClaim[_msgSender()] = _calculateRewards(_msgSender());
+        stableRewardsToClaim[_msgSender()] = _calculateRewards(_msgSender(), stableAPY);
+        //check for BONUS
         startPeriodPerUser[_msgSender()] = block.timestamp;
     }
 
@@ -60,10 +67,19 @@ contract LenderPool is Ownable {
     }
 
     function rewardOf(address lender) external view returns (uint256) {
-        return _calculateRewards(lender) + stableRewardsToClaim[lender];
+        return _calculateRewards(lender, stableAPY) + stableRewardsToClaim[lender];
     }
 
-    function _calculateRewards(address lender) private view returns (uint256) {
+    function bonusRewardOf(address lender) external view returns (uint256) {
+        console.log('>>>> %s',_calculateRewards(lender, tradeAPY));
+        console.log('>>>> %s',rewardSystem.getAmountOfTrade(1000));
+        console.log('>>>> %s',rewardSystem.getAmountOfTrade(1000*1E6));
+        console.log('>>>> %s',rewardSystem.getAmountOfTrade(_calculateRewards(lender, tradeAPY)));
+
+        return rewardSystem.getAmountOfTrade(_calculateRewards(lender, tradeAPY));
+    }
+
+    function _calculateRewards(address lender, uint16 APY) private view returns (uint256) {
         uint256 timePassed;
         uint256 duration = lockupPeriod - startPeriod;
 
@@ -72,8 +88,8 @@ contract LenderPool is Ownable {
             : block.timestamp - startPeriodPerUser[lender];
 
         uint256 percentagePassed = ((timePassed * 100) / (duration));
-
-        uint256 rewards = ((amountLent[lender] * (stableAPY * 100)) /
+//todo decimals usdt
+        uint256 rewards = ((amountLent[lender] * (APY * 100)) /
             (_precision * 100));
         return (rewards * (percentagePassed));
     }
