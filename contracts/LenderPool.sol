@@ -41,8 +41,38 @@ contract LenderPool is Ownable {
     constructor(address tokenAddress_, uint16 stableAPY_) {
         tokenAddress = IERC20(tokenAddress_);
         stableAPY = stableAPY_;
-        lockupPeriod = (lockupDurationInDays_ * 1 days) + block.timestamp;
-        startPeriod = block.timestamp;
+    }
+
+    function newRound(
+        uint256 amount_,
+        uint16 bonusAPY_,
+        uint8 tenure_,
+        bool paidTrade_
+    ) external {
+        require(amount_ >= minimumDeposit, "amount lower than minimumDeposit");
+
+        Round memory round;
+        round.bonusAPY = bonusAPY_;
+        round.startPeriod = block.timestamp;
+        round.endPeriod = block.timestamp + (tenure_ * 1 days);
+        round.amount = amount_;
+        round.paidTrade = paidTrade_;
+        roundPerUser[_msgSender()][roundCount[_msgSender()]] = round;
+        console.log("Count: %s", roundCount[_msgSender()]);
+        roundCount[_msgSender()]++;
+        tokenAddress.safeTransferFrom(_msgSender(), address(this), amount_);
+    }
+
+    function getRound(uint256 roundId, address user)
+        external
+        view
+        returns (Round memory)
+    {
+        return roundPerUser[user][roundId];
+    }
+
+    function getNumberOfRounds(address user) external view returns (uint256) {
+        return roundCount[user];
     }
 
     function setRewardSystemContract(address _rewardSystem) external {
