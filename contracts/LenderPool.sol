@@ -34,7 +34,6 @@ contract LenderPool is Ownable {
     ) {
         tokenAddress = IERC20(tokenAddress_);
         stableAPY = stableAPY_;
-        tradeAPY = tradeAPY_;
         lockupPeriod = (lockupDurationInDays_ * 1 days) + block.timestamp;
         startPeriod = block.timestamp;
     }
