@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { increaseTime, n18, ONE_DAY } from "./helpers";
+// eslint-disable-next-line node/no-missing-import
+import { increaseTime, n18, n6, ONE_DAY } from "./helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   LenderPool,
@@ -10,6 +11,7 @@ import {
   RewardSystem__factory,
   Token,
   Token__factory,
+  // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
 import { formatEther, formatUnits } from "ethers/lib/utils";
 
@@ -55,7 +57,6 @@ describe("LenderPool", function () {
     LenderPoolFactory = await ethers.getContractFactory("LenderPool");
     lenderPoolContract = await LenderPoolFactory.deploy(
       tokenContract.address,
-      "500",
       "500",
       20
     );
