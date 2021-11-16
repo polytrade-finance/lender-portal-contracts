@@ -22,6 +22,14 @@ contract LenderPool is Ownable {
     uint256 public startPeriod;
     uint256 public lockupPeriod;
 
+    struct Round {
+        bool paidTrade;
+        uint16 bonusAPY;
+        uint256 amount;
+        uint256 startPeriod;
+        uint256 endPeriod;
+    }
+
     mapping(address => uint256) private amountLent;
     mapping(address => uint256) private startPeriodPerUser;
     mapping(address => uint256) private stableRewardsToClaim;
