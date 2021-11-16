@@ -35,11 +35,10 @@ contract LenderPool is Ownable {
     mapping(address => uint256) private stableRewardsToClaim;
     mapping(address => uint256) private bonusRewardsToClaim;
 
-    constructor(
-        address tokenAddress_,
-        uint16 stableAPY_,
-        uint256 lockupDurationInDays_
-    ) {
+    mapping(address => mapping(uint256 => Round)) roundPerUser;
+    mapping(address => uint256) roundCount;
+
+    constructor(address tokenAddress_, uint16 stableAPY_) {
         tokenAddress = IERC20(tokenAddress_);
         stableAPY = stableAPY_;
         lockupPeriod = (lockupDurationInDays_ * 1 days) + block.timestamp;
