@@ -25,6 +25,7 @@ contract LenderPool is Ownable {
     mapping(address => uint256) private amountLent;
     mapping(address => uint256) private startPeriodPerUser;
     mapping(address => uint256) private stableRewardsToClaim;
+    mapping(address => uint256) private bonusRewardsToClaim;
 
     constructor(
         address tokenAddress_,
