@@ -14,7 +14,6 @@ contract LenderPool is Ownable {
     RewardSystem rewardSystem;
 
     uint16 stableAPY;
-    uint16 tradeAPY;
 
     uint256 _precision = 1E6;
 
