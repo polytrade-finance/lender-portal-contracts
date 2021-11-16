@@ -79,7 +79,11 @@ contract LenderPool is Ownable {
             stableAPY
         );
 
-        return rewardSystem.getAmountOfTrade(_calculateRewards(lender, tradeAPY));
+        bonusRewardsToClaim[_msgSender()] = _calculateBonusRewards(
+            _msgSender()
+        );
+
+        startPeriodPerUser[_msgSender()] = block.timestamp;
     }
 
     function _calculateRewards(address lender, uint16 APY) private view returns (uint256) {
