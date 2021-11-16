@@ -30,7 +30,6 @@ contract LenderPool is Ownable {
     constructor(
         address tokenAddress_,
         uint16 stableAPY_,
-        uint16 tradeAPY_,
         uint256 lockupDurationInDays_
     ) {
         tokenAddress = IERC20(tokenAddress_);
