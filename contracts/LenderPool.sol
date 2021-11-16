@@ -123,13 +123,19 @@ contract LenderPool is Ownable {
         return 0;
     }
 
-        timePassed = (block.timestamp >= lockupPeriod)
-            ? lockupPeriod - startPeriodPerUser[lender]
-            : block.timestamp - startPeriodPerUser[lender];
+    function _calculateRewards(
+        uint256 roundId,
+        address lender,
+        uint16 APY
+    ) private view returns (uint256) {
+        Round memory round = roundPerUser[lender][roundId];
 
-        uint256 percentagePassed = ((timePassed * 100) / (duration));
-        uint256 rewards = ((amountLent[lender] * (APY * 100)) /
-            (_precision * 100));
-        return (rewards * (percentagePassed));
+        uint256 timePassed = (block.timestamp >= round.endPeriod)
+            ? round.endPeriod - round.startPeriod
+            : block.timestamp - round.startPeriod;
+
+        uint256 result = ((APY * round.amount * timePassed) / 365 days) *
+            _precision;
+        return (result / 1E10);
     }
 }
