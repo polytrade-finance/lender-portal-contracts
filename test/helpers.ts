@@ -3,6 +3,10 @@ import { BigNumber, utils } from "ethers";
 
 export const ONE_DAY = 24 * 60 * 60;
 
+export function n6(amount: string): BigNumber {
+  return utils.parseUnits(amount, "6");
+}
+
 export function n18(amount: string): BigNumber {
   return utils.parseUnits(amount, "ether");
 }
