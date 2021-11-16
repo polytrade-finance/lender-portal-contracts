@@ -11,7 +11,7 @@ import {
   Token,
   Token__factory,
 } from "../typechain";
-import { parseEther } from "ethers/lib/utils";
+import { formatEther, formatUnits } from "ethers/lib/utils";
 
 describe("LenderPool", function () {
   let lenderPoolContract: LenderPool;
@@ -72,24 +72,24 @@ describe("LenderPool", function () {
   });
 
   it("Should set a new minimumDeposit", async () => {
-    expect(await lenderPoolContract.minimumDeposit()).to.equal(n18("0"));
-    await lenderPoolContract.setMinimumDeposit(n18("100"));
-    expect(await lenderPoolContract.minimumDeposit()).to.equal(n18("100"));
+    expect(await lenderPoolContract.minimumDeposit()).to.equal(n6("0"));
+    await lenderPoolContract.setMinimumDeposit(n6("100"));
+    expect(await lenderPoolContract.minimumDeposit()).to.equal(n6("100"));
   });
 
   it("Should fail deposit if amount lower than minimumDeposit ", async () => {
-    await tokenContract.approve(lenderPoolContract.address, n18("10"));
-    await expect(lenderPoolContract.deposit(n18("10"))).to.revertedWith(
+    await tokenContract.approve(lenderPoolContract.address, n6("10"));
+    await expect(lenderPoolContract.deposit(n6("10"))).to.revertedWith(
       "amount lower than minimumDeposit"
     );
   });
 
   it("Should set minimumDeposit to 0", async () => {
-    await lenderPoolContract.setMinimumDeposit(n18("0"));
+    await lenderPoolContract.setMinimumDeposit(n6("0"));
   });
 
   it("Should deposit 10 times with 10 different users at different intervals", async () => {
-    const amount = n18("1000000");
+    const amount = n6("1000000");
     for (let i = 1; i <= 10; i++) {
       await tokenContract.transfer(addresses[i], amount);
       expect(await tokenContract.balanceOf(addresses[i])).to.equal(amount);
@@ -104,73 +104,121 @@ describe("LenderPool", function () {
     }
   });
 
+  it("Should set BonusAPY for each user", async () => {
+    for (let i = 1; i <= 10; i++) {
+      await rewardSystemContract
+        .connect(accounts[i])
+        .setUserBonusAPY(addresses[i], "100");
+      expect(
+        await rewardSystemContract
+          .connect(accounts[i])
+          .getUserBonusAPY(addresses[i])
+      ).to.equal(100);
+    }
+
+    for (let i = 1; i <= 10; i++) {
+      const amountLent = await lenderPoolContract.getAmountLent(addresses[i]);
+      const stableRewards = await lenderPoolContract.rewardOf(addresses[i]);
+      const bonusRewards = await lenderPoolContract.bonusRewardOf(addresses[i]);
+      console.log(
+        `
+      ---After10Days
+      User${i}
+      amountLent=${formatUnits(amountLent, "6")}
+      stableRewards=${formatUnits(stableRewards, "6")}
+      bonusRewards=${formatEther(bonusRewards)}
+      ---After10Days
+      
+      `
+      );
+      console.log(formatEther(stableRewards.toString()));
+      console.log(formatEther(bonusRewards.toString()));
+    }
+  });
+
   it("Should returns user1's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[1])).to.equal(
-      n18("25000")
+      n6("25000")
     );
-    // expect(await lenderPoolContract.bonusRewardOf(addresses[1])).to.equal(
-    //   n18("25000")
-    // );
     const bonus = await lenderPoolContract.bonusRewardOf(addresses[1]);
-    console.log((bonus.toString()));
+    console.log(formatEther(bonus.toString()));
   });
 
   it("Should returns user2's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[2])).to.equal(
-      n18("22500")
+      n6("22500")
     );
   });
 
   it("Should returns user3's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[3])).to.equal(
-      n18("20000")
+      n6("20000")
     );
   });
 
   it("Should returns user4's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[4])).to.equal(
-      n18("17500")
+      n6("17500")
     );
   });
 
   it("Should returns user5's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[5])).to.equal(
-      n18("15000")
+      n6("15000")
     );
   });
 
   it("Should returns user6's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[6])).to.equal(
-      n18("12500")
+      n6("12500")
     );
   });
 
   it("Should returns user7's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[7])).to.equal(
-      n18("10000")
+      n6("10000")
     );
   });
 
   it("Should returns user8's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[8])).to.equal(
-      n18("7500")
+      n6("7500")
     );
   });
 
   it("Should returns user9's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[9])).to.equal(
-      n18("5000")
+      n6("5000")
     );
   });
 
   it("Should returns user10's rewards", async () => {
     expect(await lenderPoolContract.rewardOf(addresses[10])).to.equal(
-      n18("2500")
+      n6("2500")
     );
   });
 
   it("Should deposit again 10 times", async () => {
-    const amount = n18("0.0000000000000001");
+    for (let i = 0; i <= 7; i++) {
+      await increaseTime(ONE_DAY);
+
+      const amountLent = await lenderPoolContract.getAmountLent(addresses[i]);
+      const stableRewards = await lenderPoolContract.rewardOf(addresses[i]);
+      const bonusRewards = await lenderPoolContract.bonusRewardOf(addresses[i]);
+      console.log(
+        `
+        ---after17days
+        User${i}
+        amountLent=${formatUnits(amountLent, "6")}
+        stableRewards=${formatUnits(stableRewards, "6")}
+        bonusRewards=${formatEther(bonusRewards)}
+        ---after17days
+        
+        `
+      );
+    }
+
+    const amount = n6("0.000001");
     for (let i = 1; i <= 10; i++) {
       await tokenContract.transfer(addresses[i], amount);
       expect(await tokenContract.balanceOf(addresses[i])).to.equal(amount);
@@ -179,12 +227,22 @@ describe("LenderPool", function () {
         .approve(lenderPoolContract.address, amount);
       await lenderPoolContract.connect(accounts[i]).deposit(amount);
     }
+
     for (let i = 0; i <= 7; i++) {
       await increaseTime(ONE_DAY);
-    }
 
-    for (let i = 1; i <= 10; i++) {
-      // console.log((await lenderPoolContract.rewardOf(addresses[i])).toString());
+      const amountLent = await lenderPoolContract.getAmountLent(addresses[i]);
+      const stableRewards = await lenderPoolContract.rewardOf(addresses[i]);
+      const bonusRewards = await lenderPoolContract.bonusRewardOf(addresses[i]);
+      console.log(
+        `
+        ---END
+        User${i}
+        amountLent=${formatUnits(amountLent, "6")}
+        stableRewards=${formatUnits(stableRewards, "6")}
+        bonusRewards=${formatEther(bonusRewards)}
+        ---END`
+      );
     }
   });
 });
