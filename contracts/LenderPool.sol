@@ -54,12 +54,6 @@ contract LenderPool is Ownable {
         tokenAddress.safeTransferFrom(_msgSender(), address(this), amount);
     }
 
-    function _putAsideRewards() private {
-        stableRewardsToClaim[_msgSender()] = _calculateRewards(_msgSender(), stableAPY);
-        //check for BONUS
-        startPeriodPerUser[_msgSender()] = block.timestamp;
-    }
-
     function getAmountLent(address lender) external view returns (uint256) {
         return amountLent[lender];
     }
@@ -86,7 +80,26 @@ contract LenderPool is Ownable {
         startPeriodPerUser[_msgSender()] = block.timestamp;
     }
 
-    function _calculateRewards(address lender, uint16 APY) private view returns (uint256) {
+    function _calculateBonusRewards(address lender)
+        private
+        view
+        returns (uint256)
+    {
+        uint16 bonusAPY = rewardSystem.getUserBonusAPY(lender);
+        if (bonusAPY > 0) {
+            return
+                rewardSystem.getAmountOfTrade(
+                    _calculateRewards(lender, bonusAPY)
+                );
+        }
+        return 0;
+    }
+
+    function _calculateRewards(address lender, uint16 APY)
+        private
+        view
+        returns (uint256)
+    {
         uint256 timePassed;
         uint256 duration = lockupPeriod - startPeriod;
 
@@ -95,7 +108,6 @@ contract LenderPool is Ownable {
             : block.timestamp - startPeriodPerUser[lender];
 
         uint256 percentagePassed = ((timePassed * 100) / (duration));
-//todo decimals usdt
         uint256 rewards = ((amountLent[lender] * (APY * 100)) /
             (_precision * 100));
         return (rewards * (percentagePassed));
