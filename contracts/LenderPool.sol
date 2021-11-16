@@ -87,50 +87,41 @@ contract LenderPool is Ownable {
         return amountLent[lender];
     }
 
-    function rewardOf(address lender) external view returns (uint256) {
-        return
-            _calculateRewards(lender, stableAPY) + stableRewardsToClaim[lender];
-    }
-
-    function bonusRewardOf(address lender) external view returns (uint256) {
-        return _calculateBonusRewards(lender) + bonusRewardsToClaim[lender];
-    }
-
-    function _putAsideRewards() private {
-        stableRewardsToClaim[_msgSender()] = _calculateRewards(
-            _msgSender(),
-            stableAPY
-        );
-
-        bonusRewardsToClaim[_msgSender()] = _calculateBonusRewards(
-            _msgSender()
-        );
-
-        startPeriodPerUser[_msgSender()] = block.timestamp;
-    }
-
-    function _calculateBonusRewards(address lender)
-        private
+    function roundRewardOf(uint256 roundId, address lender)
+        external
         view
         returns (uint256)
     {
-        uint16 bonusAPY = rewardSystem.getUserBonusAPY(lender);
+        return _calculateRewards(roundId, lender, stableAPY);
+    }
+
+    function roundTradeRewardOf(uint256 roundId, address lender)
+        external
+        view
+        returns (uint256)
+    {
+        return
+            _calculateRewards(
+                roundId,
+                lender,
+                roundPerUser[lender][roundId].bonusAPY
+            );
+    }
+
+    function amountTradeRewardOf(uint256 roundId, address lender)
+        external
+        view
+        returns (uint256)
+    {
+        uint16 bonusAPY = roundPerUser[lender][roundId].bonusAPY;
         if (bonusAPY > 0) {
             return
                 rewardSystem.getAmountOfTrade(
-                    _calculateRewards(lender, bonusAPY)
+                    _calculateRewards(roundId, lender, bonusAPY)
                 );
         }
         return 0;
     }
-
-    function _calculateRewards(address lender, uint16 APY)
-        private
-        view
-        returns (uint256)
-    {
-        uint256 timePassed;
-        uint256 duration = lockupPeriod - startPeriod;
 
         timePassed = (block.timestamp >= lockupPeriod)
             ? lockupPeriod - startPeriodPerUser[lender]
