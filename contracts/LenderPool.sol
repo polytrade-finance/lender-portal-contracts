@@ -83,14 +83,6 @@ contract LenderPool is Ownable {
         minimumDeposit = _minimumDeposit;
     }
 
-    function deposit(uint256 amount) external {
-        require(amount >= minimumDeposit, "amount lower than minimumDeposit");
-        _putAsideRewards();
-        amountLent[_msgSender()] += amount;
-        //        startPeriodPerUser[_msgSender()] = block.timestamp;
-        tokenAddress.safeTransferFrom(_msgSender(), address(this), amount);
-    }
-
     function getAmountLent(address lender) external view returns (uint256) {
         return amountLent[lender];
     }
