@@ -70,10 +70,14 @@ contract LenderPool is Ownable {
     }
 
     function bonusRewardOf(address lender) external view returns (uint256) {
-        console.log('>>>> %s',_calculateRewards(lender, tradeAPY));
-        console.log('>>>> %s',rewardSystem.getAmountOfTrade(1000));
-        console.log('>>>> %s',rewardSystem.getAmountOfTrade(1000*1E6));
-        console.log('>>>> %s',rewardSystem.getAmountOfTrade(_calculateRewards(lender, tradeAPY)));
+        return _calculateBonusRewards(lender) + bonusRewardsToClaim[lender];
+    }
+
+    function _putAsideRewards() private {
+        stableRewardsToClaim[_msgSender()] = _calculateRewards(
+            _msgSender(),
+            stableAPY
+        );
 
         return rewardSystem.getAmountOfTrade(_calculateRewards(lender, tradeAPY));
     }
