@@ -19,8 +19,6 @@ contract LenderPool is Ownable {
 
     uint public minimumDeposit;
 
-    uint256 public startPeriod;
-    uint256 public lockupPeriod;
 
     struct Round {
         bool paidTrade;
