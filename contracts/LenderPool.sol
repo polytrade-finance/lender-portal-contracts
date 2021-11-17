@@ -23,7 +23,7 @@ contract LenderPool is Ownable {
     struct Round {
         bool paidTrade;
         uint16 bonusAPY;
-        uint amount;
+        uint amountLent;
         uint startPeriod;
         uint endPeriod;
     }
