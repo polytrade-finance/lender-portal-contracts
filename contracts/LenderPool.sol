@@ -53,7 +53,6 @@ contract LenderPool is Ownable {
         round.amount = amount_;
         round.paidTrade = paidTrade_;
         roundPerUser[_msgSender()][roundCount[_msgSender()]] = round;
-        console.log("Count: %s", roundCount[_msgSender()]);
         roundCount[_msgSender()]++;
         tokenAddress.safeTransferFrom(_msgSender(), address(this), amount_);
     }
