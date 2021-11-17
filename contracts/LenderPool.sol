@@ -110,7 +110,7 @@ contract LenderPool is Ownable {
         uint16 bonusAPY = roundPerUser[lender][roundId].bonusAPY;
         if (bonusAPY > 0) {
             return
-                rewardSystem.getAmountOfTrade(
+                rewardSystem.getAmountTradeForUSDT(
                     _calculateRewards(roundId, lender, bonusAPY)
                 );
         }
