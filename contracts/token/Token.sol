@@ -9,7 +9,8 @@ contract Token is ERC20 {
     constructor(
         string memory name_,
         string memory symbol_,
-        uint256 totalSupply_
+        uint8 decimals_,
+        uint totalSupply_
     ) ERC20(name_, symbol_) {
         _mint(msg.sender, totalSupply_);
         _decimals = decimals_;
