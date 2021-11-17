@@ -14,7 +14,7 @@ contract RewardSystem {
 
     mapping(address => uint16) private _userBonusAPY;
 
-    function getAmountOfTrade(uint256 amount) external view returns (uint256) {
+    function getAmountTradeForUSDT(uint amount) external view returns (uint) {
         address[] memory path = new address[](3);
         path[0] = USDT;
         path[1] = WMATIC;
