@@ -58,6 +58,22 @@ contract LenderPool is Ownable {
         tokenAddress.safeTransferFrom(_msgSender(), address(this), amount_);
     }
 
+    function withdraw(uint roundId) external {
+        Round memory round = roundPerUser[_msgSender()][roundId];
+        require(
+            block.timestamp >= round.endPeriod,
+            "Round is not finished yet"
+        );
+        _withdraw(round.amountLent);
+    }
+
+    function withdrawAll() external {
+        uint nbRound = roundCount[_msgSender()];
+        for (uint i = 0; i < nbRound; i++) {
+            withdraw(i);
+        }
+    }
+
     function getRound(uint roundId, address user)
         external
         view
@@ -132,5 +148,11 @@ contract LenderPool is Ownable {
         uint result = ((APY * round.amountLent * timePassed) / 365 days) *
             _precision;
         return (result / 1E10);
+    }
+
+    function _withdraw(uint amount) private {
+        amountLent[_msgSender()] -= amount;
+        roundPerUser[_msgSender()][roundId].amountLent -= amount;
+        tokenAddress.safeTransfer(_msgSender(), amount);
     }
 }
