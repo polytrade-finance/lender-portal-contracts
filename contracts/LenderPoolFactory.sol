@@ -1,3 +1,4 @@
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
 import "./LenderPool.sol";
@@ -31,10 +32,7 @@ contract LenderPoolFactory {
     }
 
     function cloneDeterministicPool(bytes32 salt) external returns (address) {
-        address clonedPool = lenderInstance.predictDeterministicAddress(
-            salt,
-            msg.sender
-        );
+        address clonedPool = lenderInstance.cloneDeterministic(salt);
         console.log("%s <<<", clonedPool);
         return clonedPool;
     }
