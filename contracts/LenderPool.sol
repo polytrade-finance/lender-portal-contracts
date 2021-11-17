@@ -44,16 +44,17 @@ contract LenderPool is Ownable {
         uint8 tenure_,
         bool paidTrade_
     ) external {
-        require(amount_ >= minimumDeposit, "amount lower than minimumDeposit");
+        require(amount_ >= minimumDeposit, "Amount lower than minimumDeposit");
 
         Round memory round;
         round.bonusAPY = bonusAPY_;
         round.startPeriod = block.timestamp;
         round.endPeriod = block.timestamp + (tenure_ * 1 days);
-        round.amount = amount_;
+        round.amountLent = amount_;
         round.paidTrade = paidTrade_;
         roundPerUser[_msgSender()][roundCount[_msgSender()]] = round;
         roundCount[_msgSender()]++;
+        amountLent[_msgSender()] += amount_;
         tokenAddress.safeTransferFrom(_msgSender(), address(this), amount_);
     }
 
@@ -128,7 +129,7 @@ contract LenderPool is Ownable {
             ? round.endPeriod - round.startPeriod
             : block.timestamp - round.startPeriod;
 
-        uint result = ((APY * round.amount * timePassed) / 365 days) *
+        uint result = ((APY * round.amountLent * timePassed) / 365 days) *
             _precision;
         return (result / 1E10);
     }
