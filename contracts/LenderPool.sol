@@ -84,7 +84,7 @@ contract LenderPool is Ownable {
     function stableRewardOf(uint roundId, address lender)
         external
         view
-        returns (uint256)
+        returns (uint)
     {
         return _calculateRewards(roundId, lender, stableAPY);
     }
