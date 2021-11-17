@@ -15,9 +15,9 @@ contract LenderPool is Ownable {
 
     uint16 stableAPY;
 
-    uint256 _precision = 1E6;
+    uint _precision = 1E6;
 
-    uint256 public minimumDeposit;
+    uint public minimumDeposit;
 
     uint256 public startPeriod;
     uint256 public lockupPeriod;
@@ -25,18 +25,15 @@ contract LenderPool is Ownable {
     struct Round {
         bool paidTrade;
         uint16 bonusAPY;
-        uint256 amount;
-        uint256 startPeriod;
-        uint256 endPeriod;
+        uint amount;
+        uint startPeriod;
+        uint endPeriod;
     }
 
-    mapping(address => uint256) private amountLent;
-    mapping(address => uint256) private startPeriodPerUser;
-    mapping(address => uint256) private stableRewardsToClaim;
-    mapping(address => uint256) private bonusRewardsToClaim;
+    mapping(address => uint) private amountLent;
 
-    mapping(address => mapping(uint256 => Round)) roundPerUser;
-    mapping(address => uint256) roundCount;
+    mapping(address => mapping(uint => Round)) roundPerUser;
+    mapping(address => uint) roundCount;
 
     constructor(address tokenAddress_, uint16 stableAPY_) {
         tokenAddress = IERC20(tokenAddress_);
@@ -44,7 +41,7 @@ contract LenderPool is Ownable {
     }
 
     function newRound(
-        uint256 amount_,
+        uint amount_,
         uint16 bonusAPY_,
         uint8 tenure_,
         bool paidTrade_
@@ -63,7 +60,7 @@ contract LenderPool is Ownable {
         tokenAddress.safeTransferFrom(_msgSender(), address(this), amount_);
     }
 
-    function getRound(uint256 roundId, address user)
+    function getRound(uint roundId, address user)
         external
         view
         returns (Round memory)
@@ -71,7 +68,7 @@ contract LenderPool is Ownable {
         return roundPerUser[user][roundId];
     }
 
-    function getNumberOfRounds(address user) external view returns (uint256) {
+    function getNumberOfRounds(address user) external view returns (uint) {
         return roundCount[user];
     }
 
@@ -79,15 +76,15 @@ contract LenderPool is Ownable {
         rewardSystem = RewardSystem(_rewardSystem);
     }
 
-    function setMinimumDeposit(uint256 _minimumDeposit) external {
+    function setMinimumDeposit(uint _minimumDeposit) external {
         minimumDeposit = _minimumDeposit;
     }
 
-    function getAmountLent(address lender) external view returns (uint256) {
+    function getAmountLent(address lender) external view returns (uint) {
         return amountLent[lender];
     }
 
-    function roundRewardOf(uint256 roundId, address lender)
+    function stableRewardOf(uint roundId, address lender)
         external
         view
         returns (uint256)
@@ -95,10 +92,10 @@ contract LenderPool is Ownable {
         return _calculateRewards(roundId, lender, stableAPY);
     }
 
-    function roundTradeRewardOf(uint256 roundId, address lender)
+    function bonusRewardOf(uint roundId, address lender)
         external
         view
-        returns (uint256)
+        returns (uint)
     {
         return
             _calculateRewards(
@@ -108,10 +105,10 @@ contract LenderPool is Ownable {
             );
     }
 
-    function amountTradeRewardOf(uint256 roundId, address lender)
+    function tradeRewardOf(uint roundId, address lender)
         external
         view
-        returns (uint256)
+        returns (uint)
     {
         uint16 bonusAPY = roundPerUser[lender][roundId].bonusAPY;
         if (bonusAPY > 0) {
@@ -124,17 +121,17 @@ contract LenderPool is Ownable {
     }
 
     function _calculateRewards(
-        uint256 roundId,
+        uint roundId,
         address lender,
         uint16 APY
-    ) private view returns (uint256) {
+    ) private view returns (uint) {
         Round memory round = roundPerUser[lender][roundId];
 
-        uint256 timePassed = (block.timestamp >= round.endPeriod)
+        uint timePassed = (block.timestamp >= round.endPeriod)
             ? round.endPeriod - round.startPeriod
             : block.timestamp - round.startPeriod;
 
-        uint256 result = ((APY * round.amount * timePassed) / 365 days) *
+        uint result = ((APY * round.amount * timePassed) / 365 days) *
             _precision;
         return (result / 1E10);
     }
