@@ -115,6 +115,10 @@ describe("LenderPool", function () {
         await lenderPool1.newRound(n6("1300"), "1300", 33, false);
       });
 
+      it("Should not withdraw all", async () => {
+        await lenderPool1.withdrawAll();
+      });
+
       it.skip("Should return 0", async () => {
         const rewardBefore = await lenderPool1.stableRewardOf(0, addresses[0]);
         expect(rewardBefore).to.equal(0);
