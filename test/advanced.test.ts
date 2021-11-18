@@ -190,6 +190,18 @@ describe("LenderPool - Advanced", function () {
         );
         expect(bonusRewardAfter).to.equal(n6("8.219178"));
       });
+
+      it("Should withdraw for user0 for round0", async () => {
+
+expect(
+          (await tradeContract.balanceOf(addresses[0]))
+        ).to.equal(0);
+        await lenderPool1.withdraw(addresses[0], 0);
+        await USDTContract.balanceOf(addresses[0]);
+        expect(
+            await tradeContract.balanceOf(addresses[0])
+        ).to.be.above(0);
+      });
     });
 
     describe("User1 - Round0, amount: 100 USDT, bonusAPY: 8%, Tenure: 30, TradeBonus: true", () => {
