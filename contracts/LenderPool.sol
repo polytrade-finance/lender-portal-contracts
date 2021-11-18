@@ -8,7 +8,10 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract LenderPool is Ownable {
+
+/// @author Polytrade
+/// @title LenderPool V1
+contract LenderPool is ILenderPool, Ownable, Pausable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable tokenAddress;
