@@ -92,7 +92,15 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     }
 
     function getAmountLent(address lender) external view returns (uint) {
-        return amountLent[lender];
+        return _amountLent[lender];
+    }
+
+    function getFinishedRounds(address lender)
+        external
+        view
+        returns (uint[] memory)
+    {
+        return _getFinishedRounds(lender);
     }
 
     function stableRewardOf(uint roundId, address lender)
