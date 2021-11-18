@@ -143,10 +143,7 @@ describe("LenderPool - Advanced", function () {
       expect(
         await ethers.provider.getCode(lenderPool1.address)
       ).to.be.length.above(100);
-    });
-
-    it("Should set the rewardSystem contract", async () => {
-      await lenderPool1.setRewardSystemContract(rewardSystemContract.address);
+      await USDTContract.transfer(lenderPool1.address, n6("10000"));
     });
 
     it("Should set the minimum deposit to 100 USDT", async () => {
