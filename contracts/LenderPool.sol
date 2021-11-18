@@ -17,7 +17,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     IERC20 public immutable stableInstance;
     IUniswapV2Router public immutable router;
 
-    uint16 stableAPY;
+    address public immutable trade;
 
     uint _precision = 1E6;
 
