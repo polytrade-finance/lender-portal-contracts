@@ -35,14 +35,8 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         trade = 0x692AC1e363ae34b6B489148152b12e2785a3d8d6;
     }
 
-    mapping(address => uint) private amountLent;
-
-    mapping(address => mapping(uint => Round)) roundPerUser;
-    mapping(address => uint) roundCount;
-
-    constructor(address tokenAddress_, uint16 stableAPY_) {
-        tokenAddress = IERC20(tokenAddress_);
-        stableAPY = stableAPY_;
+    function setMinimumDeposit(uint _minimumDeposit) external onlyOwner {
+        minimumDeposit = _minimumDeposit;
     }
 
     function newRound(
