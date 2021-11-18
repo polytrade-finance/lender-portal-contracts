@@ -111,16 +111,16 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         return _calculateRewards(lender, roundId, _stableAPY);
     }
 
-    function bonusRewardOf(uint roundId, address lender)
+    function bonusRewardOf(address lender, uint roundId)
         external
         view
         returns (uint)
     {
         return
             _calculateRewards(
-                roundId,
                 lender,
-                roundPerUser[lender][roundId].bonusAPY
+                roundId,
+                _userRounds[lender][roundId].bonusAPY
             );
     }
 
