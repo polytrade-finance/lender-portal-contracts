@@ -18,6 +18,7 @@ import {
   TradeAddress,
   USDCAddress,
   WMaticAddress,
+  // eslint-disable-next-line node/no-missing-import
 } from "./constants/constants.helpers";
 
 describe("LenderPool - Multiple Rounds", function () {
@@ -78,9 +79,15 @@ describe("LenderPool - Multiple Rounds", function () {
     for (let i = 0; i < 10; i++) {
       await quickswapRouter
         .connect(accounts[i])
-        .swapExactETHForTokens(0, path, addresses[10], timestamp + (365* ONE_DAY), {
-          value: n18("10000"),
-        });
+        .swapExactETHForTokens(
+          0,
+          path,
+          addresses[10],
+          timestamp + 365 * ONE_DAY,
+          {
+            value: n18("10000"),
+          }
+        );
       console.log(
         formatUnits(await USDCContract.balanceOf(addresses[10]), "6")
       );
