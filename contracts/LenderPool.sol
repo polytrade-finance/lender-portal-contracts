@@ -88,15 +88,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     }
 
     function getNumberOfRounds(address user) external view returns (uint) {
-        return roundCount[user];
-    }
-
-    function setRewardSystemContract(address _rewardSystem) external {
-        rewardSystem = RewardSystem(_rewardSystem);
-    }
-
-    function setMinimumDeposit(uint _minimumDeposit) external {
-        minimumDeposit = _minimumDeposit;
+        return _roundCount[user];
     }
 
     function getAmountLent(address lender) external view returns (uint) {
