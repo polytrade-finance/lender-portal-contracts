@@ -51,32 +51,29 @@ describe("LenderPool - Advanced", function () {
       TradeAddress,
       accounts[0]
     );
-    await USDTContract.deployed();
+
+    expect(
+      await ethers.provider.getCode(tradeContract.address)
+    ).to.be.length.above(100);
+  });
+
+  it("Should return the USDT Token", async function () {
+    USDTContract = await ethers.getContractAt(
+      "ERC20",
+      USDTAddress,
+      accounts[0]
+    );
+
     expect(
       await ethers.provider.getCode(USDTContract.address)
     ).to.be.length.above(100);
   });
 
-  it("Should return the DAI Token once it's deployed", async function () {
-    TokenFactory = await ethers.getContractFactory("Token");
-    DAIContract = await TokenFactory.deploy(
-      "DAI",
-      "DAI",
-      18,
-      n18("1000000000")
-    );
-    await DAIContract.deployed();
+  it("Should return the DAI Token", async function () {
+    DAIContract = await ethers.getContractAt("ERC20", DAIAddress, accounts[0]);
+
     expect(
       await ethers.provider.getCode(DAIContract.address)
-    ).to.be.length.above(100);
-  });
-
-  it("Should return the RewardSystem once it's deployed", async function () {
-    RewardSystemFactory = await ethers.getContractFactory("RewardSystem");
-    rewardSystemContract = await RewardSystemFactory.deploy();
-    await rewardSystemContract.deployed();
-    expect(
-      await ethers.provider.getCode(rewardSystemContract.address)
     ).to.be.length.above(100);
   });
 
