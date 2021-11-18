@@ -187,17 +187,17 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     }
 
     function _calculateRewards(
-        uint roundId,
         address lender,
-        uint16 APY
+        uint roundId,
+        uint16 rewardAPY
     ) private view returns (uint) {
-        Round memory round = roundPerUser[lender][roundId];
+        Round memory round = _userRounds[lender][roundId];
 
         uint timePassed = (block.timestamp >= round.endPeriod)
             ? round.endPeriod - round.startPeriod
             : block.timestamp - round.startPeriod;
 
-        uint result = ((APY * round.amountLent * timePassed) / 365 days) *
+        uint result = ((rewardAPY * round.amountLent * timePassed) / 365 days) *
             _precision;
         return (result / 1E10);
     }
