@@ -124,7 +124,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
             );
     }
 
-    function tradeRewardOf(uint roundId, address lender)
+    function totalRewardOf(address lender, uint roundId)
         external
         view
         returns (uint)
