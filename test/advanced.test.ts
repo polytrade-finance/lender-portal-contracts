@@ -40,13 +40,16 @@ describe("LenderPool - Advanced", function () {
     addresses = accounts.map((account: SignerWithAddress) => account.address);
   });
 
-  it("Should return the USDT Token once it's deployed", async function () {
-    TokenFactory = await ethers.getContractFactory("Token");
-    USDTContract = await TokenFactory.deploy(
-      "Tether",
-      "USDT",
-      6,
-      n6("1000000000")
+  beforeEach(async () => {
+    timestamp = (await ethers.provider.getBlock(ethers.provider.blockNumber))
+      .timestamp;
+  });
+
+  it("Should return the Trade Token", async function () {
+    tradeContract = await ethers.getContractAt(
+      "ERC20",
+      TradeAddress,
+      accounts[0]
     );
     await USDTContract.deployed();
     expect(
