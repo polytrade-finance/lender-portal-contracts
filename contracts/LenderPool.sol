@@ -79,12 +79,12 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         }
     }
 
-    function getRound(uint roundId, address user)
+    function getRound(address user, uint roundId)
         external
         view
         returns (Round memory)
     {
-        return roundPerUser[user][roundId];
+        return _userRounds[user][roundId];
     }
 
     function getNumberOfRounds(address user) external view returns (uint) {
