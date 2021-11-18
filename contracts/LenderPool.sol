@@ -202,9 +202,45 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         return (result / 1E10);
     }
 
-    function _withdraw(uint amount) private {
-        amountLent[_msgSender()] -= amount;
-        roundPerUser[_msgSender()][roundId].amountLent -= amount;
-        tokenAddress.safeTransfer(_msgSender(), amount);
+    function _getFinishedRounds(address lender)
+        private
+        view
+        returns (uint[] memory)
+    {
+        uint length = _roundCount[lender];
+        uint j = 0;
+        for (uint i = 0; i < length; i++) {
+            if (
+                block.timestamp >= _userRounds[lender][i].endPeriod &&
+                _userRounds[lender][i].amountLent > 0
+            ) {
+                j++;
+            }
+        }
+        uint[] memory result = new uint[](j);
+        j = 0;
+        for (uint i = 0; i < length; i++) {
+            if (
+                block.timestamp >= _userRounds[lender][i].endPeriod &&
+                _userRounds[lender][i].amountLent > 0
+            ) {
+                result[j] = i;
+                j++;
+            }
+        }
+        return result;
+    }
+
+    function _getPath()
+    private
+    view
+    returns (address[] memory)
+    {
+        address[] memory path = new address[](3);
+        path[0] = address(stableInstance);
+        path[1] = router.WETH();
+        path[2] = trade;
+
+        return path;
     }
 }
