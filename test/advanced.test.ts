@@ -217,12 +217,17 @@ describe("LenderPool - Advanced", function () {
         expect(bonusRewardAfter).to.equal(n6("0.657534"));
       });
 
-    it("Should return rewards of Trade", async () => {
-      const tradeRewards0 = await lenderPool1.tradeRewardOf(0, addresses[0]);
-      console.log(tradeRewards0.toString());
+      it("Should withdraw for user1 for round0", async () => {
 
-      const tradeRewards1 = await lenderPool1.tradeRewardOf(0, addresses[1]);
-      console.log(tradeRewards1.toString());
+        expect(
+            (await tradeContract.balanceOf(addresses[1]))
+        ).to.equal(0);
+        await lenderPool1.withdraw(addresses[1], 0);
+        await USDTContract.balanceOf(addresses[1]);
+        expect(
+            await tradeContract.balanceOf(addresses[1])
+        ).to.be.above(0);
+      });
     });
 
     describe("User2 - Round0, amount: 1000 USDT, bonusAPY: 10%, Tenure: 30, TradeBonus: true", () => {
@@ -231,9 +236,7 @@ describe("LenderPool - Advanced", function () {
           lenderPool1.address,
           ethers.constants.MaxUint256
         );
-        await lenderPool1
-          .connect(accounts[2])
-          .newRound(n6("1000"), "1000", 30, true);
+        await lenderPool1.newRound(addresses[2], n6("1000"), "1000", 30, true);
       });
 
       it("Should return stable rewards for user2 for round0 at the endPeriod", async () => {
@@ -251,6 +254,17 @@ describe("LenderPool - Advanced", function () {
         );
         expect(bonusRewardAfter).to.equal(n6("8.219178"));
       });
+
+      it("Should withdraw for user2 for round0", async () => {
+        expect(
+       await tradeContract.balanceOf(addresses[2])
+        ).to.equal(0);
+        await lenderPool1.withdraw(addresses[2], 0);
+        await USDTContract.balanceOf(addresses[2]);
+        expect(
+            await tradeContract.balanceOf(addresses[2])
+        ).to.be.above(0);
+      });
     });
   });
 
@@ -262,10 +276,7 @@ describe("LenderPool - Advanced", function () {
       expect(
         await ethers.provider.getCode(lenderPool2.address)
       ).to.be.length.above(100);
-    });
-
-    it("Should set the rewardSystem contract", async () => {
-      await lenderPool2.setRewardSystemContract(rewardSystemContract.address);
+      await USDTContract.transfer(lenderPool2.address, n6("10000"));
     });
 
     it("Should set the minimum deposit to 1000 USDT", async () => {
@@ -278,12 +289,7 @@ describe("LenderPool - Advanced", function () {
           lenderPool2.address,
           ethers.constants.MaxUint256
         );
-        await lenderPool2.newRound(n6("5000"), "700", 60, false);
-      });
-
-      it("Should get round 0 from user0", async () => {
-        const round = await lenderPool2.getRound(0, addresses[0]);
-        console.log(round.toString());
+        await lenderPool2.newRound(addresses[0], n6("5000"), "700", 60, false);
       });
 
       it("Should return stable rewards for user0 for round0 at the endPeriod", async () => {
@@ -314,8 +320,8 @@ describe("LenderPool - Advanced", function () {
           ethers.constants.MaxUint256
         );
         await expect(
-          lenderPool2.connect(accounts[1]).newRound(n6("500"), "900", 60, true)
-        ).to.be.revertedWith("amount lower than minimumDeposit");
+          lenderPool2.newRound(addresses[1], n6("500"), "900", 60, true)
+        ).to.be.revertedWith("Amount lower than minimumDeposit");
       });
     });
   });
@@ -328,10 +334,8 @@ describe("LenderPool - Advanced", function () {
       expect(
         await ethers.provider.getCode(lenderPool3.address)
       ).to.be.length.above(100);
-    });
 
-    it("Should set the rewardSystem contract", async () => {
-      await lenderPool3.setRewardSystemContract(rewardSystemContract.address);
+      await DAIContract.transfer(lenderPool3.address, n18("10000"));
     });
 
     it("Should set the minimum deposit to 100 DAI", async () => {
@@ -343,12 +347,7 @@ describe("LenderPool - Advanced", function () {
         lenderPool3.address,
         ethers.constants.MaxUint256
       );
-      await lenderPool3.newRound(n18("500"), "1100", 30, false);
-    });
-
-    it("Should get round 0 from user0", async () => {
-      const round = await lenderPool3.getRound(0, addresses[0]);
-      console.log(round.toString());
+      await lenderPool3.newRound(addresses[0], n18("500"), "1100", 30, false);
     });
 
     it("Should return stable rewards for user0 for round0 at the endPeriod", async () => {
