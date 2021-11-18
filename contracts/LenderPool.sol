@@ -19,7 +19,8 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
 
     address public immutable trade;
 
-    uint _precision = 1E6;
+    uint16 private immutable _stableAPY;
+    uint private constant _precision = 1E6;
 
     uint public minimumDeposit;
 
