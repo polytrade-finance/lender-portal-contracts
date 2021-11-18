@@ -163,13 +163,17 @@ describe("LenderPool - Advanced", function () {
       });
 
       it("Should get round 0 from user0", async () => {
-        const round = await lenderPool1.getRound(0, addresses[0]);
+        const round = await lenderPool1.getRound(addresses[0], 0);
+        expect(round.bonusAPY).to.equal(1000);
+        expect(round.paidTrade).to.equal(true);
+        expect(round.amountLent).to.equal(n6("1000"));
       });
 
       it("Should get all rounds for user0", async () => {
         const count = await lenderPool1.getNumberOfRounds(addresses[0]);
         for (let i = BigNumber.from(0); i < count; i = i.add(1)) {
-          const round = await lenderPool1.getRound(i, addresses[0]);
+          const round = await lenderPool1.getRound(addresses[0], i);
+          expect(round.amountLent).to.be.above(n6("100"));
         }
       });
 
