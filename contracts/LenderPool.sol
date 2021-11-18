@@ -24,6 +24,9 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
 
     uint public minimumDeposit;
 
+    mapping(address => uint) private _amountLent;
+    mapping(address => uint) private _roundCount;
+    mapping(address => mapping(uint => Round)) private _userRounds;
 
     struct Round {
         bool paidTrade;
