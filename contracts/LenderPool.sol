@@ -129,14 +129,61 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         view
         returns (uint)
     {
-        uint16 bonusAPY = roundPerUser[lender][roundId].bonusAPY;
-        if (bonusAPY > 0) {
-            return
-                rewardSystem.getAmountTradeForUSDT(
-                    _calculateRewards(roundId, lender, bonusAPY)
-                );
+        uint stableReward = _calculateRewards(lender, roundId, _stableAPY);
+
+        uint bonusReward = _calculateRewards(
+            lender,
+            roundId,
+            _userRounds[lender][roundId].bonusAPY
+        );
+
+        return stableReward + bonusReward;
+    }
+
+    function _claimRewards(address lender, uint roundId) private {
+        Round memory round = _userRounds[lender][roundId];
+        stableInstance.approve(address(router), ~uint(0));
+        if (round.paidTrade) {
+            uint amountTrade = _swapExactTokens(lender, roundId, (_stableAPY + round.bonusAPY));
+            emit ClaimTrade(lender, roundId, amountTrade);
+        } else {
+            uint amountStable = _calculateRewards(lender, roundId, _stableAPY);
+            stableInstance.transfer(
+                lender,
+                amountStable
+            );
+            emit ClaimStable(lender, roundId, amountStable);
+            uint amountTrade = _swapExactTokens(lender, roundId, round.bonusAPY);
+            emit ClaimTrade(lender, roundId, amountTrade);
         }
-        return 0;
+    }
+
+    function _withdraw(
+        address lender,
+        uint roundId,
+        uint amount
+    ) private {
+        _amountLent[lender] -= amount;
+        _userRounds[lender][roundId].amountLent -= amount;
+        stableInstance.safeTransfer(lender, amount);
+        emit Withdraw(lender, roundId, amount);
+    }
+
+    function _swapExactTokens(
+        address lender,
+        uint roundId,
+        uint16 rewardAPY
+    ) private returns (uint) {
+        uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
+        uint amountTrade = router.swapExactTokensForTokens(
+                amountStable,
+                0,
+                _getPath(),
+                lender,
+                block.timestamp
+            )[2];
+        emit Swapped(amountStable, amountTrade);
+        return amountTrade;
     }
 
     function _calculateRewards(
