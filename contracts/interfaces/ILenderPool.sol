@@ -36,7 +36,6 @@ interface ILenderPool {
         view
         returns (uint);
 
-
     function bonusRewardOf(address lender, uint roundId)
         external
         view
@@ -55,7 +54,11 @@ interface ILenderPool {
     /**
      * @dev Emitted when `lender` claim rewards in Stable coin for a specific round
      */
-    event ClaimStable(address indexed lender, uint indexed roundId, uint amount);
+    event ClaimStable(
+        address indexed lender,
+        uint indexed roundId,
+        uint amount
+    );
 
     /**
      * @dev Emitted when `lender` claim rewards in Trade token for a specific round
@@ -63,7 +66,7 @@ interface ILenderPool {
     event ClaimTrade(address indexed lender, uint indexed roundId, uint amount);
 
     /**
-    * @dev Emitted when Stable coin are swapped into Trade token
+     * @dev Emitted when Stable coin are swapped into Trade token
      */
     event Swapped(uint amountStable, uint amountTrade);
 }
