@@ -108,7 +108,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         view
         returns (uint)
     {
-        return _calculateRewards(roundId, lender, stableAPY);
+        return _calculateRewards(lender, roundId, _stableAPY);
     }
 
     function bonusRewardOf(uint roundId, address lender)
