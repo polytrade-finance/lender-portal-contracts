@@ -28,12 +28,11 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     mapping(address => uint) private _roundCount;
     mapping(address => mapping(uint => Round)) private _userRounds;
 
-    struct Round {
-        bool paidTrade;
-        uint16 bonusAPY;
-        uint amountLent;
-        uint startPeriod;
-        uint endPeriod;
+    constructor(address stableAddress_, uint16 stableAPY_) {
+        stableInstance = IERC20(stableAddress_);
+        _stableAPY = stableAPY_;
+        router = IUniswapV2Router(0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff);
+        trade = 0x692AC1e363ae34b6B489148152b12e2785a3d8d6;
     }
 
     mapping(address => uint) private amountLent;
