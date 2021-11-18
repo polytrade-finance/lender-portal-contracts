@@ -77,17 +77,61 @@ describe("LenderPool - Advanced", function () {
     ).to.be.length.above(100);
   });
 
+  it("Should buy USDT on quickswap", async () => {
+    quickswapRouter = await ethers.getContractAt(
+      "IUniswapV2Router",
+      quickswapRouterAddress,
+      accounts[0]
+    );
+
+    const path: string[] = [WMaticAddress, USDTAddress];
+
+    for (let i = 0; i < 10; i++) {
+      await quickswapRouter
+        .connect(accounts[i])
+        .swapExactETHForTokens(0, path, addresses[0], timestamp + extraTime, {
+          value: n18("10000"),
+        });
+      expect(await USDTContract.balanceOf(addresses[0])).to.be.above(
+        n6("100")
+      );
+    }
+  });
+
+  it("Should buy DAI on quickswap", async () => {
+    quickswapRouter = await ethers.getContractAt(
+      "IUniswapV2Router",
+      quickswapRouterAddress,
+      accounts[0]
+    );
+
+    const path: string[] = [WMaticAddress, DAIAddress];
+
+    for (let i = 0; i < 10; i++) {
+      await quickswapRouter
+        .connect(accounts[i])
+        .swapExactETHForTokens(0, path, addresses[0], timestamp + extraTime, {
+          value: n18("10000"),
+        });
+      expect(await DAIContract.balanceOf(addresses[0])).to.be.above(
+          n6("100")
+      );
+    }
+  });
+
   it("Should distribute USDT to 10 different addresses", async () => {
-    const amount = n6("10000");
+    const amount = n6("5000");
     for (let i = 1; i <= 10; i++) {
       await USDTContract.transfer(addresses[i], amount);
+      expect(await USDTContract.balanceOf(addresses[i])).to.equal(amount);
     }
   });
 
   it("Should distribute DAI to 10 different addresses", async () => {
-    const amount = n18("10000");
+    const amount = n18("5000");
     for (let i = 1; i <= 10; i++) {
       await DAIContract.transfer(addresses[i], amount);
+      expect(await DAIContract.balanceOf(addresses[i])).to.equal(amount);
     }
   });
 
