@@ -61,8 +61,8 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         emit Deposit(lender, _roundCount[lender] - 1, amount);
     }
 
-    function withdraw(uint roundId) external {
-        Round memory round = roundPerUser[_msgSender()][roundId];
+    function withdraw(address lender, uint roundId) public onlyOwner {
+        Round memory round = _userRounds[lender][roundId];
         require(
             block.timestamp >= round.endPeriod,
             "Round is not finished yet"
