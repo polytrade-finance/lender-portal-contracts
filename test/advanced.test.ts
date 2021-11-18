@@ -5,6 +5,8 @@ import { ethers } from "hardhat";
 import { increaseTime, n18, n6, ONE_DAY } from "./helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
+  ERC20,
+  IUniswapV2Router,
   LenderPool,
   LenderPool__factory,
   RewardSystem,
