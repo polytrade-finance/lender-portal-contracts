@@ -2,7 +2,6 @@
 pragma solidity =0.8.10;
 
 interface IUniswapV2Router {
-
     function swapExactTokensForTokens(
         uint amountIn,
         uint amountOutMin,
@@ -19,5 +18,4 @@ interface IUniswapV2Router {
     ) external payable returns (uint[] memory amounts);
 
     function WETH() external pure returns (address);
-
 }
