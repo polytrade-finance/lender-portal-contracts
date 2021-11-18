@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-
 /// @author Polytrade
 /// @title LenderPool V1
 contract LenderPool is ILenderPool, Ownable, Pausable {
@@ -20,7 +19,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     address public immutable trade;
 
     uint16 private immutable _stableAPY;
-    uint private constant _precision = 1E6;
+    uint private constant PRECISION = 1E6;
 
     uint public minimumDeposit;
 
@@ -48,11 +47,11 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     ) external onlyOwner whenNotPaused {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
         Round memory round = Round({
-            bonusAPY : bonusAPY,
-            startPeriod : block.timestamp,
-            endPeriod : block.timestamp + (tenure * 1 days),
-            amountLent : amount,
-            paidTrade : paidTrade
+            bonusAPY: bonusAPY,
+            startPeriod: block.timestamp,
+            endPeriod: block.timestamp + (tenure * 1 days),
+            amountLent: amount,
+            paidTrade: paidTrade
         });
         _userRounds[lender][_roundCount[lender]] = round;
         _roundCount[lender]++;
@@ -144,16 +143,21 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         Round memory round = _userRounds[lender][roundId];
         stableInstance.approve(address(router), ~uint(0));
         if (round.paidTrade) {
-            uint amountTrade = _swapExactTokens(lender, roundId, (_stableAPY + round.bonusAPY));
+            uint amountTrade = _swapExactTokens(
+                lender,
+                roundId,
+                (_stableAPY + round.bonusAPY)
+            );
             emit ClaimTrade(lender, roundId, amountTrade);
         } else {
             uint amountStable = _calculateRewards(lender, roundId, _stableAPY);
-            stableInstance.transfer(
-                lender,
-                amountStable
-            );
+            stableInstance.transfer(lender, amountStable);
             emit ClaimStable(lender, roundId, amountStable);
-            uint amountTrade = _swapExactTokens(lender, roundId, round.bonusAPY);
+            uint amountTrade = _swapExactTokens(
+                lender,
+                roundId,
+                round.bonusAPY
+            );
             emit ClaimTrade(lender, roundId, amountTrade);
         }
     }
@@ -176,12 +180,12 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     ) private returns (uint) {
         uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
         uint amountTrade = router.swapExactTokensForTokens(
-                amountStable,
-                0,
-                _getPath(),
-                lender,
-                block.timestamp
-            )[2];
+            amountStable,
+            0,
+            _getPath(),
+            lender,
+            block.timestamp
+        )[2];
         emit Swapped(amountStable, amountTrade);
         return amountTrade;
     }
@@ -198,7 +202,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
             : block.timestamp - round.startPeriod;
 
         uint result = ((rewardAPY * round.amountLent * timePassed) / 365 days) *
-            _precision;
+            PRECISION;
         return (result / 1E10);
     }
 
@@ -231,11 +235,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         return result;
     }
 
-    function _getPath()
-    private
-    view
-    returns (address[] memory)
-    {
+    function _getPath() private view returns (address[] memory) {
         address[] memory path = new address[](3);
         path[0] = address(stableInstance);
         path[1] = router.WETH();
