@@ -21,15 +21,15 @@ import {
   WMaticAddress,
 } from "./constants/constants.helpers";
 
-describe("LenderPool", function () {
+describe("LenderPool - Advanced", function () {
   let lenderPool1: LenderPool;
   let lenderPool2: LenderPool;
   let lenderPool3: LenderPool;
   // eslint-disable-next-line camelcase
   let LenderPoolFactory: LenderPool__factory;
-  let USDTContract: Token;
-  let DAIContract: Token;
-  let TokenFactory: Token__factory;
+  let USDTContract: ERC20;
+  let DAIContract: ERC20;
+  let tradeContract: ERC20;
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let rewardSystemContract: RewardSystem;
