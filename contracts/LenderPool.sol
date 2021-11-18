@@ -14,8 +14,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract LenderPool is ILenderPool, Ownable, Pausable {
     using SafeERC20 for IERC20;
 
-    IERC20 public immutable tokenAddress;
-    RewardSystem rewardSystem;
+    IERC20 public immutable stableInstance;
+    IUniswapV2Router public immutable router;
 
     uint16 stableAPY;
 
