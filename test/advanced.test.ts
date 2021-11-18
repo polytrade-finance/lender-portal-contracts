@@ -9,10 +9,6 @@ import {
   IUniswapV2Router,
   LenderPool,
   LenderPool__factory,
-  RewardSystem,
-  RewardSystem__factory,
-  Token,
-  Token__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
 import { BigNumber } from "ethers";
