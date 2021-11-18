@@ -40,23 +40,25 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     }
 
     function newRound(
-        uint amount_,
-        uint16 bonusAPY_,
-        uint8 tenure_,
-        bool paidTrade_
-    ) external {
-        require(amount_ >= minimumDeposit, "Amount lower than minimumDeposit");
-
-        Round memory round;
-        round.bonusAPY = bonusAPY_;
-        round.startPeriod = block.timestamp;
-        round.endPeriod = block.timestamp + (tenure_ * 1 days);
-        round.amountLent = amount_;
-        round.paidTrade = paidTrade_;
-        roundPerUser[_msgSender()][roundCount[_msgSender()]] = round;
-        roundCount[_msgSender()]++;
-        amountLent[_msgSender()] += amount_;
-        tokenAddress.safeTransferFrom(_msgSender(), address(this), amount_);
+        address lender,
+        uint amount,
+        uint16 bonusAPY,
+        uint8 tenure,
+        bool paidTrade
+    ) external onlyOwner whenNotPaused {
+        require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
+        Round memory round = Round({
+            bonusAPY : bonusAPY,
+            startPeriod : block.timestamp,
+            endPeriod : block.timestamp + (tenure * 1 days),
+            amountLent : amount,
+            paidTrade : paidTrade
+        });
+        _userRounds[lender][_roundCount[lender]] = round;
+        _roundCount[lender]++;
+        _amountLent[lender] += amount;
+        stableInstance.safeTransferFrom(lender, address(this), amount);
+        emit Deposit(lender, _roundCount[lender] - 1, amount);
     }
 
     function withdraw(uint roundId) external {
