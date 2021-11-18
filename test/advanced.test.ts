@@ -156,19 +156,10 @@ describe("LenderPool - Advanced", function () {
           lenderPool1.address,
           ethers.constants.MaxUint256
         );
-        await lenderPool1.newRound(n6("1000"), "1000", 30, true);
-        await lenderPool1.newRound(n6("1100"), "1100", 31, false);
-        await lenderPool1.newRound(n6("1200"), "1200", 32, true);
-        await lenderPool1.newRound(n6("1300"), "1300", 33, false);
-      });
-
-      it("Should not withdraw all", async () => {
-        await lenderPool1.withdrawAll();
-      });
-
-      it.skip("Should return 0", async () => {
-        const rewardBefore = await lenderPool1.stableRewardOf(0, addresses[0]);
-        expect(rewardBefore).to.equal(0);
+        await lenderPool1.newRound(addresses[0], n6("1000"), "1000", 30, true);
+        await lenderPool1.newRound(addresses[0], n6("1100"), "1100", 31, false);
+        await lenderPool1.newRound(addresses[0], n6("1200"), "1200", 32, true);
+        await lenderPool1.newRound(addresses[0], n6("1300"), "1300", 33, false);
       });
 
       it("Should get round 0 from user0", async () => {
