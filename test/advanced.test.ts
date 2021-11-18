@@ -12,6 +12,14 @@ import {
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
 import { BigNumber } from "ethers";
+import {
+  DAIAddress,
+  extraTime,
+  quickswapRouterAddress,
+  TradeAddress,
+  USDTAddress,
+  WMaticAddress,
+} from "./constants/constants.helpers";
 
 describe("LenderPool", function () {
   let lenderPool1: LenderPool;
