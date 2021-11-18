@@ -32,8 +32,8 @@ describe("LenderPool - Advanced", function () {
   let tradeContract: ERC20;
   let accounts: SignerWithAddress[];
   let addresses: string[];
-  let rewardSystemContract: RewardSystem;
-  let RewardSystemFactory: RewardSystem__factory;
+  let quickswapRouter: IUniswapV2Router;
+  let timestamp: number;
 
   before(async () => {
     accounts = await ethers.getSigners();
