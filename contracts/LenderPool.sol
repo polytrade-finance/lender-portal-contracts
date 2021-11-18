@@ -67,13 +67,15 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
             block.timestamp >= round.endPeriod,
             "Round is not finished yet"
         );
-        _withdraw(round.amountLent);
+        _claimRewards(lender, roundId);
+        _withdraw(lender, roundId, round.amountLent);
     }
 
-    function withdrawAll() external {
-        uint nbRound = roundCount[_msgSender()];
-        for (uint i = 0; i < nbRound; i++) {
-            withdraw(i);
+    function withdrawAllFinishedRounds(address lender) external onlyOwner {
+        uint[] memory rounds = _getFinishedRounds(lender);
+
+        for (uint i = 0; i < rounds.length; i++) {
+            withdraw(lender, rounds[i]);
         }
     }
 
