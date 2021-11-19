@@ -232,16 +232,14 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     }
 
     /**
- * @notice Claim rewards for the specified lender and the specified roundId
+     * @notice Claim rewards for the specified lender and the specified roundId
      * @dev only `Owner` can withdraw
      * @dev if round `paidTrade` is `true`, swap all rewards into Trade tokens
      * @dev if round `paidTrade` is `false` and swap only bonusRewards and transfer stableRewards to the lender
-
-          * @dev emits ClaimTrade whenever Stable are swapped into Trade
-          * @dev emits ClaimStable whenever Stable are sent to the lender
-* @param lender, address of the lender
+     * @dev emits ClaimTrade whenever Stable are swapped into Trade
+     * @dev emits ClaimStable whenever Stable are sent to the lender
+     * @param lender, address of the lender
      * @param roundId, Id of the round
-
      */
     function _claimRewards(address lender, uint roundId) private {
         Round memory round = _lenderRounds[lender][roundId];
