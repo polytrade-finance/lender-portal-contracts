@@ -42,8 +42,8 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm run test:coverage
-        with:
-          github-token: ${{ secrets.POLYGON_URL }}
+        env:
+          POLYGON_URL: ${{ secrets.POLYGON_URL }}
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@1.1.3
         with:
