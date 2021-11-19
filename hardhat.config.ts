@@ -23,8 +23,16 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.4",
+  solidity: "0.8.10",
   networks: {
+    hardhat: {
+      forking: {
+        url: process.env.POLYGON_URL || "",
+      },
+      accounts: {
+        accountsBalance: "1000000000000000000000000",
+      },
+    },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:
