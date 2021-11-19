@@ -253,7 +253,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
             emit ClaimTrade(lender, roundId, amountTrade);
         } else {
             uint amountStable = _calculateRewards(lender, roundId, _stableAPY);
-            stableInstance.transfer(lender, amountStable);
+            stableInstance.safeTransfer(lender, amountStable);
             emit ClaimStable(lender, roundId, amountStable);
             uint amountTrade = _swapExactTokens(
                 lender,
