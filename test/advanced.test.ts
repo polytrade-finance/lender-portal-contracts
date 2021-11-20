@@ -47,7 +47,7 @@ describe("LenderPool - Advanced", function () {
 
   it("Should return the Trade Token", async function () {
     tradeContract = await ethers.getContractAt(
-      "ERC20",
+      "IERC20",
       TradeAddress,
       accounts[0]
     );
@@ -59,7 +59,7 @@ describe("LenderPool - Advanced", function () {
 
   it("Should return the USDT Token", async function () {
     USDTContract = await ethers.getContractAt(
-      "ERC20",
+      "IERC20",
       USDTAddress,
       accounts[0]
     );
@@ -70,7 +70,7 @@ describe("LenderPool - Advanced", function () {
   });
 
   it("Should return the DAI Token", async function () {
-    DAIContract = await ethers.getContractAt("ERC20", DAIAddress, accounts[0]);
+    DAIContract = await ethers.getContractAt("IERC20", DAIAddress, accounts[0]);
 
     expect(
       await ethers.provider.getCode(DAIContract.address)
