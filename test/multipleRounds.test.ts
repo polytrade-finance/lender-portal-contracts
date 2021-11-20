@@ -5,7 +5,7 @@ import { ethers } from "hardhat";
 import { increaseTime, n18, n6, ONE_DAY } from "./helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  ERC20,
+  IERC20,
   IUniswapV2Router,
   LenderPool,
   LenderPool__factory,
@@ -26,8 +26,8 @@ describe("LenderPool - Multiple Rounds", function () {
 
   // eslint-disable-next-line camelcase
   let LenderPoolFactory: LenderPool__factory;
-  let USDCContract: ERC20;
-  let tradeContract: ERC20;
+  let USDCContract: IERC20;
+  let tradeContract: IERC20;
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let quickswapRouter: IUniswapV2Router;
@@ -45,7 +45,7 @@ describe("LenderPool - Multiple Rounds", function () {
 
   it("Should return the Trade Token", async function () {
     tradeContract = await ethers.getContractAt(
-      "ERC20",
+      "IERC20",
       TradeAddress,
       accounts[10]
     );
@@ -57,7 +57,7 @@ describe("LenderPool - Multiple Rounds", function () {
 
   it("Should return the USDC Token", async function () {
     USDCContract = await ethers.getContractAt(
-      "ERC20",
+      "IERC20",
       USDCAddress,
       accounts[10]
     );

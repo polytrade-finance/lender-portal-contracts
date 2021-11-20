@@ -5,7 +5,6 @@ import { ethers } from "hardhat";
 import { increaseTime, n18, n6, ONE_DAY } from "./helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  ERC20,
   IUniswapV2Router,
   LenderPool,
   LenderPool__factory,
@@ -28,9 +27,9 @@ describe("LenderPool - Advanced", function () {
   let lenderPool3: LenderPool;
   // eslint-disable-next-line camelcase
   let LenderPoolFactory: LenderPool__factory;
-  let USDTContract: ERC20;
-  let DAIContract: ERC20;
-  let tradeContract: ERC20;
+  let USDTContract: any;
+  let DAIContract: any;
+  let tradeContract: any;
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let quickswapRouter: IUniswapV2Router;
@@ -48,7 +47,7 @@ describe("LenderPool - Advanced", function () {
 
   it("Should return the Trade Token", async function () {
     tradeContract = await ethers.getContractAt(
-      "ERC20",
+      "IERC20",
       TradeAddress,
       accounts[0]
     );
@@ -60,7 +59,7 @@ describe("LenderPool - Advanced", function () {
 
   it("Should return the USDT Token", async function () {
     USDTContract = await ethers.getContractAt(
-      "ERC20",
+      "IERC20",
       USDTAddress,
       accounts[0]
     );
@@ -71,7 +70,7 @@ describe("LenderPool - Advanced", function () {
   });
 
   it("Should return the DAI Token", async function () {
-    DAIContract = await ethers.getContractAt("ERC20", DAIAddress, accounts[0]);
+    DAIContract = await ethers.getContractAt("IERC20", DAIAddress, accounts[0]);
 
     expect(
       await ethers.provider.getCode(DAIContract.address)

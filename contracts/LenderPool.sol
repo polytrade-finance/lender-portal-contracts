@@ -232,16 +232,14 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
     }
 
     /**
- * @notice Claim rewards for the specified lender and the specified roundId
+     * @notice Claim rewards for the specified lender and the specified roundId
      * @dev only `Owner` can withdraw
      * @dev if round `paidTrade` is `true`, swap all rewards into Trade tokens
      * @dev if round `paidTrade` is `false` and swap only bonusRewards and transfer stableRewards to the lender
-
-          * @dev emits ClaimTrade whenever Stable are swapped into Trade
-          * @dev emits ClaimStable whenever Stable are sent to the lender
-* @param lender, address of the lender
+     * @dev emits ClaimTrade whenever Stable are swapped into Trade
+     * @dev emits ClaimStable whenever Stable are sent to the lender
+     * @param lender, address of the lender
      * @param roundId, Id of the round
-
      */
     function _claimRewards(address lender, uint roundId) private {
         Round memory round = _lenderRounds[lender][roundId];
@@ -255,7 +253,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
             emit ClaimTrade(lender, roundId, amountTrade);
         } else {
             uint amountStable = _calculateRewards(lender, roundId, _stableAPY);
-            stableInstance.transfer(lender, amountStable);
+            stableInstance.safeTransfer(lender, amountStable);
             emit ClaimStable(lender, roundId, amountStable);
             uint amountTrade = _swapExactTokens(
                 lender,
@@ -329,9 +327,8 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
             ? round.endPeriod - round.startPeriod
             : block.timestamp - round.startPeriod;
 
-        uint result = ((rewardAPY * round.amountLent * timePassed) / 365 days) *
-            PRECISION;
-        return (result / 1E10);
+        uint result = ((rewardAPY * round.amountLent * timePassed) / 365 days);
+        return ((result * PRECISION) / 1E10);
     }
 
     /**
