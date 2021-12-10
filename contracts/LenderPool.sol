@@ -91,6 +91,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
             amountLent: amount,
             paidTrade: paidTrade
         });
+
         _lenderRounds[lender][_roundCount[lender]] = round;
         _roundCount[lender]++;
         _amountLent[lender] += amount;
