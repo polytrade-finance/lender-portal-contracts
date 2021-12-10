@@ -87,9 +87,6 @@ describe("LenderPool - Multiple Rounds", function () {
             value: n18("10000"),
           }
         );
-      console.log(
-        formatUnits(await USDCContract.balanceOf(addresses[10]), "6")
-      );
     }
   });
 
