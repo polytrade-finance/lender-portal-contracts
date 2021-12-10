@@ -325,5 +325,11 @@ describe("LenderPool - Multiple Rounds", function () {
       );
       expect(finishedRounds.length).to.equal(0);
     });
+
+    it("Should fail running new round with invalid tenure (0)", async (user: number = 1) => {
+      await expect(
+        lenderPool.newRound(addresses[user], n6("110"), "1100", "0", false)
+      ).to.be.revertedWith("Invalid tenure");
+    });
   });
 });
