@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+
 /// @author Polytrade
 /// @title LenderPool V1
 contract LenderPool is ILenderPool, Ownable, Pausable {
@@ -54,8 +55,10 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
      * @dev update `minimumDeposit` with `newMinimumDeposit`
      * @param newMinimumDeposit, new amount for minimum deposit
      */
-    function setMinimumDeposit(uint _minimumDeposit) external onlyOwner {
-        minimumDeposit = _minimumDeposit;
+    function setMinimumDeposit(uint newMinimumDeposit) external onlyOwner {
+        uint oldMinimumDeposit = minimumDeposit;
+        minimumDeposit = newMinimumDeposit;
+        emit MinimumDepositUpdated(oldMinimumDeposit, newMinimumDeposit);
     }
 
     /**
