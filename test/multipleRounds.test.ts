@@ -147,6 +147,18 @@ describe("LenderPool - Multiple Rounds", function () {
       );
     });
 
+    it("Should fail running new round with invalid tenure (more than 365)", async (user: number = 1) => {
+      await expect(
+        lenderPool.newRound(addresses[user], n6("110"), "1100", "366", false)
+      ).to.be.revertedWith("Invalid tenure");
+    });
+
+    it("Should fail running new round with invalid tenure (less than 30)", async (user: number = 1) => {
+      await expect(
+        lenderPool.newRound(addresses[user], n6("110"), "1100", "20", false)
+      ).to.be.revertedWith("Invalid tenure");
+    });
+
     it("Should run new round (1)", async (user: number = 1) => {
       await lenderPool.newRound(addresses[user], n6("110"), "1100", 120, false);
       const round = await lenderPool.getRound(addresses[user], 1);
