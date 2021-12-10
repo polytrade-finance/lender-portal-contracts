@@ -83,6 +83,7 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         bool paidTrade
     ) external onlyOwner whenNotPaused {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
+        require(tenure >= 30 && tenure <= 365, "Invalid tenure");
         Round memory round = Round({
             bonusAPY: bonusAPY,
             startPeriod: block.timestamp,
