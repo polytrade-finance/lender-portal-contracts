@@ -111,6 +111,12 @@ interface ILenderPool {
         returns (uint);
 
     /**
+     * @dev Emitted when `minimumDeposit` is updated
+     */
+    event MinimumDepositUpdated(uint previousMinimumDeposit, uint newMinimumDeposit);
+
+
+    /**
      * @dev Emitted when `amount` tokens are deposited into a pool by generating a new Round
      */
     event Deposit(address indexed owner, uint indexed roundId, uint amount);
