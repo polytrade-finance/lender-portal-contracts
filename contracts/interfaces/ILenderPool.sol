@@ -15,7 +15,7 @@ interface ILenderPool {
      * @dev update `minimumDeposit` with `newMinimumDeposit`
      * @param newMinimumDeposit, new amount for minimum deposit
      */
-    function setMinimumDeposit(uint _minimumDeposit) external;
+    function setMinimumDeposit(uint newMinimumDeposit) external;
 
     /**
      * @notice create new Round on behalf of the lender, each deposit has its own round
