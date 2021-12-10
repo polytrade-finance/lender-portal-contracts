@@ -12,7 +12,6 @@ import {
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
 import { BigNumber } from "ethers";
-import { formatUnits } from "ethers/lib/utils";
 import {
   quickswapRouterAddress,
   TradeAddress,
