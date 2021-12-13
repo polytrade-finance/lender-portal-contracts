@@ -361,5 +361,18 @@ describe("LenderPool - Advanced", function () {
     it("Should withdraw for user0 for round0", async () => {
       await lenderPool3.withdraw(addresses[0], 0, utils.parseEther("5"));
     });
+
+    it("Should fail to withdraw if no amount lent", async () => {
+      await expect(
+        lenderPool3.withdraw(addresses[0], 0, utils.parseEther("5"))
+      ).to.be.revertedWith("No amount lent");
+    });
+
+    it("Should withdraw 100 DAI from LenderPool", async () => {
+      await lenderPool3.withdrawExtraTokens(
+        DAIAddress,
+        utils.parseEther("100")
+      );
+    });
   });
 });
