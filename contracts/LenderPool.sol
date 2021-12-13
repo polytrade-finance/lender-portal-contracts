@@ -87,11 +87,11 @@ contract LenderPool is ILenderPool, Ownable {
             paidTrade: paidTrade
         });
 
-        _lenderRounds[lender][_roundCount[lender]] = round;
-        _roundCount[lender]++;
-        _amountLent[lender] += amount;
+        _lenderRounds[lender][_lenderInfo[lender].roundCount] = round;
+        _lenderInfo[lender].roundCount++;
+        _lenderInfo[lender].amountLent += amount;
         stableInstance.safeTransferFrom(lender, address(this), amount);
-        emit Deposit(lender, _roundCount[lender] - 1, amount);
+        emit Deposit(lender, _lenderInfo[lender].roundCount - 1, amount);
     }
 
     /**
