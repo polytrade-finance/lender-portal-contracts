@@ -100,11 +100,11 @@ contract LenderPool is ILenderPool, Ownable {
      * @param tokenContract address of the token to be transferred
      * @param amount amount of tokens to be transferred
      */
-    function withdrawExtraTokens(address tokenContract, uint amount)
+    function withdrawExtraTokens(address tokenAddress, uint amount)
         external
         onlyOwner
     {
-        IERC20 tokenContract = IERC20(tokenContract);
+        IERC20 tokenContract = IERC20(tokenAddress);
 
         tokenContract.transfer(owner(), amount);
     }
