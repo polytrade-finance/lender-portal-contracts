@@ -268,8 +268,13 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev emits ClaimStable whenever Stable are sent to the lender
      * @param lender, address of the lender
      * @param roundId, Id of the round
+     * @param amountOutMin, The minimum amount tokens to receive
      */
-    function _claimRewards(address lender, uint roundId) private {
+    function _claimRewards(
+        address lender,
+        uint roundId,
+        uint amountOutMin
+    ) private {
         Round memory round = _lenderRounds[lender][roundId];
         if (round.paidTrade) {
             uint amountTrade = _swapExactTokens(
