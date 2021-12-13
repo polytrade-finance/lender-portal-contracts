@@ -255,7 +255,7 @@ contract LenderPool is ILenderPool, Ownable {
         );
         uint amountLent = _lenderRounds[lender][roundId].amountLent;
         require(amountLent > 0, "No amount lent");
-        _claimRewards(lender, roundId);
+        _claimRewards(lender, roundId, amountOutMin);
         _withdraw(lender, roundId, amountLent);
     }
 
