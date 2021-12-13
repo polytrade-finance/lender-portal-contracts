@@ -96,7 +96,7 @@ interface ILenderPool {
     /**
      * @notice Returns the total amount lent for the lender on every round
      * @param lender, address of the lender to be checked
-     * @return returns _amountLent[lender]
+     * @return returns amount lent by a lender
      */
     function getAmountLent(address lender) external view returns (uint);
 
@@ -132,6 +132,17 @@ interface ILenderPool {
     function bonusRewardOf(address lender, uint roundId)
         external
         view
+        returns (uint);
+
+    /**
+     * @notice Returns the total amount of rewards for a specific lender on a specific roundId
+     * @dev calculate rewards for stable (stableAPY) and bonus (bonusAPY)
+     * @param lender, address of the lender to be checked
+     * @param roundId, Id of the round to be checked
+     * @return returns the total amount of rewards (stable + bonus) in stable (based on stableInstance)
+     */
+    function totalRewardOf(address lender, uint roundId)
+        external
         returns (uint);
 
     /**
