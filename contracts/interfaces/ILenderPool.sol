@@ -8,8 +8,11 @@ interface ILenderPool {
         uint64 startPeriod;
         uint64 endPeriod;
         uint amountLent;
-        uint startPeriod;
-        uint endPeriod;
+    }
+
+    struct LenderInfo {
+        uint amountLent;
+        uint roundCount;
     }
 
     /**
