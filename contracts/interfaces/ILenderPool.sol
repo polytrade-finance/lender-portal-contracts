@@ -46,7 +46,7 @@ interface ILenderPool {
     /**
      * @notice transfer tokens from the contract to the owner
      * @dev only `Owner` can withdrawExtraTokens
-     * @param tokenContract address of the token to be transferred
+     * @param tokenAddress address of the token to be transferred
      * @param amount amount of tokens to be transferred
      */
     function withdrawExtraTokens(address tokenContract, uint amount) external;
