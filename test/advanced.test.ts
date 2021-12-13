@@ -10,7 +10,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import {
   DAIAddress,
   extraTime,
@@ -193,7 +193,7 @@ describe("LenderPool - Advanced", function () {
 
       it("Should withdraw for user0 for round0", async () => {
         expect(await tradeContract.balanceOf(addresses[0])).to.equal(0);
-        await lenderPool1.withdraw(addresses[0], 0);
+        await lenderPool1.withdraw(addresses[0], 0, utils.parseEther("10"));
         await USDTContract.balanceOf(addresses[0]);
         expect(await tradeContract.balanceOf(addresses[0])).to.be.above(0);
       });
@@ -226,7 +226,7 @@ describe("LenderPool - Advanced", function () {
 
       it("Should withdraw for user1 for round0", async () => {
         expect(await tradeContract.balanceOf(addresses[1])).to.equal(0);
-        await lenderPool1.withdraw(addresses[1], 0);
+        await lenderPool1.withdraw(addresses[1], 0, utils.parseEther("0.5"));
         await USDTContract.balanceOf(addresses[1]);
         expect(await tradeContract.balanceOf(addresses[1])).to.be.above(0);
       });
@@ -259,7 +259,7 @@ describe("LenderPool - Advanced", function () {
 
       it("Should withdraw for user2 for round0", async () => {
         expect(await tradeContract.balanceOf(addresses[2])).to.equal(0);
-        await lenderPool1.withdraw(addresses[2], 0);
+        await lenderPool1.withdraw(addresses[2], 0, utils.parseEther("10"));
         await USDTContract.balanceOf(addresses[2]);
         expect(await tradeContract.balanceOf(addresses[2])).to.be.above(0);
       });
@@ -305,7 +305,7 @@ describe("LenderPool - Advanced", function () {
       });
 
       it("Should withdraw for user0 for round0", async () => {
-        await lenderPool2.withdraw(addresses[0], 0);
+        await lenderPool2.withdraw(addresses[0], 0, utils.parseEther("10"));
         await USDTContract.balanceOf(addresses[0]);
       });
     });
@@ -359,7 +359,7 @@ describe("LenderPool - Advanced", function () {
     });
 
     it("Should withdraw for user0 for round0", async () => {
-      await lenderPool3.withdraw(addresses[0], 0);
+      await lenderPool3.withdraw(addresses[0], 0, utils.parseEther("5"));
     });
   });
 });
