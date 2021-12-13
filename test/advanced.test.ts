@@ -142,6 +142,10 @@ describe("LenderPool - Advanced", function () {
       await USDTContract.transfer(lenderPool1.address, n6("10000"));
     });
 
+    it("Should return the Stable APY", async () => {
+      expect(await lenderPool1.getStableAPY()).to.equal(500);
+    });
+
     it("Should set the minimum deposit to 100 USDT", async () => {
       await lenderPool1.setMinimumDeposit(n6("100"));
     });
