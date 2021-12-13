@@ -150,7 +150,7 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice Returns the number of rounds for the a specific lender
      * @param lender, address of the lender to be checked
-     * @return returns _roundCount[lender] (last known round)
+     * @return returns the number of rounds for a specific Lender
      */
     function getNumberOfRounds(address lender) external view returns (uint) {
         return _lenderInfo[lender].roundCount;
@@ -159,7 +159,7 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice Returns the total amount lent for the lender on every round
      * @param lender, address of the lender to be checked
-     * @return returns _amountLent[lender]
+     * @return returns amount lent by a lender
      */
     function getAmountLent(address lender) external view returns (uint) {
         return _lenderInfo[lender].amountLent;
