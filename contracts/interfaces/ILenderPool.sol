@@ -51,8 +51,13 @@ interface ILenderPool {
      * @dev run `_claimRewards` and `_withdraw`
      * @param lender, address of the lender
      * @param roundId, Id of the round
+     * @param amountOutMin, The minimum amount tokens to receive
      */
-    function withdraw(address lender, uint roundId) external;
+    function withdraw(
+        address lender,
+        uint roundId,
+        uint amountOutMin
+    ) external;
 
     /**
      * @notice Returns all the information of a specific round for a specific lender
