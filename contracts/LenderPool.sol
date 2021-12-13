@@ -287,7 +287,7 @@ contract LenderPool is ILenderPool, Ownable {
         uint roundId,
         uint amount
     ) private {
-        _amountLent[lender] -= amount;
+        _lenderInfo[lender].amountLent -= amount;
         _lenderRounds[lender][roundId].amountLent -= amount;
         stableInstance.safeTransfer(lender, amount);
         emit Withdraw(lender, roundId, amount);
