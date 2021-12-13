@@ -85,8 +85,8 @@ contract LenderPool is ILenderPool, Ownable, Pausable {
         require(tenure >= 30 && tenure <= 365, "Invalid tenure");
         Round memory round = Round({
             bonusAPY: bonusAPY,
-            startPeriod: block.timestamp,
-            endPeriod: block.timestamp + (tenure * 1 days),
+            startPeriod: uint64(block.timestamp),
+            endPeriod: uint64(block.timestamp + (tenure * 1 days)),
             amountLent: amount,
             paidTrade: paidTrade
         });
