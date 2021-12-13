@@ -351,7 +351,7 @@ contract LenderPool is ILenderPool, Ownable {
         view
         returns (uint[] memory)
     {
-        uint length = _roundCount[lender];
+        uint length = _lenderInfo[lender].roundCount;
         uint j = 0;
         for (uint i = 0; i < length; i++) {
             if (
