@@ -109,6 +109,15 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice Returns the stable APY for this pool
+     * @dev returns the stable APY
+     * @return uint16 of the stable APY
+     */
+    function getStableAPY() external view returns (uint16) {
+        return _stableAPY;
+    }
+
+    /**
      * @notice Returns all the information of a specific round for a specific lender
      * @dev returns Round struct of the specific round for a specific lender
      * @param lender, address of the lender to be checked
