@@ -116,7 +116,7 @@ contract LenderPool is ILenderPool, Ownable {
         uint[] memory rounds = _getFinishedRounds(lender);
 
         for (uint i = 0; i < rounds.length; i++) {
-            withdraw(lender, rounds[i]);
+            withdraw(lender, rounds[i], 0);
         }
     }
 
@@ -241,8 +241,13 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev run `_claimRewards` and `_withdraw`
      * @param lender, address of the lender
      * @param roundId, Id of the round
+     * @param amountOutMin, The minimum amount tokens to receive
      */
-    function withdraw(address lender, uint roundId) public onlyOwner {
+    function withdraw(
+        address lender,
+        uint roundId,
+        uint amountOutMin
+    ) public onlyOwner {
         Round memory round = _lenderRounds[lender][roundId];
         require(
             block.timestamp >= round.endPeriod,
