@@ -95,6 +95,18 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice transfer tokens from the contract to the owner
+     * @dev only `Owner` can withdrawExtraTokens
+     * @param tokenContract address of the token to be transferred
+     * @param amount amount of tokens to be transferred
+     */
+    function withdrawExtraTokens(address tokenContract, uint256 amount) external onlyOwner {
+        IERC20 tokenContract = IERC20(tokenContract);
+
+        tokenContract.transfer(owner(), amount);
+    }
+
+    /**
      * @notice Withdraw all amounts lent and claim rewards for all finished rounds
      * @dev `withdraw` function is called for each finished round
      * @dev only `Owner` can withdrawAllFinishedRounds
