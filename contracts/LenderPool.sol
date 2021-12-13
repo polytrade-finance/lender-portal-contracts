@@ -30,11 +30,8 @@ contract LenderPool is ILenderPool, Ownable {
     /// uint minimum Deposit amount
     uint public minimumDeposit;
 
-    /// _amountLent mapping of the total amountLent for each  lender
-    mapping(address => uint) private _amountLent;
-
-    /// _roundCount mapping that counts the amount of round for each lender
-    mapping(address => uint) private _roundCount;
+    /// _lenderInfo mapping of the total amountLent and counts the amount of round for each lender
+    mapping(address => LenderInfo) private _lenderInfo;
 
     /// _lenderRounds mapping that contains all roundIds and Round info for each lender
     mapping(address => mapping(uint => Round)) private _lenderRounds;
