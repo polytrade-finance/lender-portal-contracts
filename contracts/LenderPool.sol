@@ -74,7 +74,7 @@ contract LenderPool is ILenderPool, Ownable {
         address lender,
         uint amount,
         uint16 bonusAPY,
-        uint tenure,
+        uint16 tenure,
         bool paidTrade
     ) external onlyOwner {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
