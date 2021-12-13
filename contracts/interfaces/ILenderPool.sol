@@ -39,7 +39,7 @@ interface ILenderPool {
         address lender,
         uint amount,
         uint16 bonusAPY,
-        uint tenure,
+        uint16 tenure,
         bool paidTrade
     ) external;
 
