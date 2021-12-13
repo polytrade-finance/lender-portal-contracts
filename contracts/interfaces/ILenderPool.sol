@@ -49,14 +49,7 @@ interface ILenderPool {
      * @param tokenContract address of the token to be transferred
      * @param amount amount of tokens to be transferred
      */
-    function withdrawExtraTokens(address tokenContract, uint amount)
-        external
-        onlyOwner
-    {
-        IERC20 tokenContract = IERC20(tokenContract);
-
-        tokenContract.transfer(owner(), amount);
-    }
+    function withdrawExtraTokens(address tokenContract, uint amount) external;
 
     /**
      * @notice Withdraw the initial deposit of the specified lender for the specified roundId
@@ -91,9 +84,7 @@ interface ILenderPool {
      * @dev returns the stable APY
      * @return uint16 of the stable APY
      */
-    function getStableAPY() external view returns (uint16) {
-        return _stableAPY;
-    }
+    function getStableAPY() external view returns (uint16);
 
     /**
      * @notice Returns the number of rounds for the a specific lender
