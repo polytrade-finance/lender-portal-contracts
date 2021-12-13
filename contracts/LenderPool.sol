@@ -138,7 +138,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @return returns _roundCount[lender] (last known round)
      */
     function getNumberOfRounds(address lender) external view returns (uint) {
-        return _roundCount[lender];
+        return _lenderInfo[lender].roundCount;
     }
 
     /**
@@ -147,7 +147,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @return returns _amountLent[lender]
      */
     function getAmountLent(address lender) external view returns (uint) {
-        return _amountLent[lender];
+        return _lenderInfo[lender].amountLent;
     }
 
     /**
