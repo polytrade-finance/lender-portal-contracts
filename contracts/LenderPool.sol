@@ -335,7 +335,7 @@ contract LenderPool is ILenderPool, Ownable {
         uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
         uint amountTrade = router.swapExactTokensForTokens(
             amountStable,
-            0,
+            amountOutMin,
             _getPath(),
             lender,
             block.timestamp
