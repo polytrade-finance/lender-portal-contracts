@@ -280,7 +280,8 @@ contract LenderPool is ILenderPool, Ownable {
             uint amountTrade = _swapExactTokens(
                 lender,
                 roundId,
-                (_stableAPY + round.bonusAPY)
+                (_stableAPY + round.bonusAPY),
+                amountOutMin
             );
             emit ClaimTrade(lender, roundId, amountTrade);
         } else {
