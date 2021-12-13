@@ -79,7 +79,7 @@ interface ILenderPool {
      * @dev returns Round struct of the specific round for a specific lender
      * @param lender, address of the lender to be checked
      * @param roundId, Id of the round to be checked
-     * @return Round ({ bool paidTrade, uint16 bonusAPY, uint amountLent, uint startPeriod, uint endPeriod })
+     * @return Round ({ bool paidTrade, uint16 bonusAPY, uint amountLent, uint64 startPeriod, uint64 endPeriod })
      */
     function getRound(address lender, uint roundId)
         external
