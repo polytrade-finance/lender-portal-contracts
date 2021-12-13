@@ -26,7 +26,6 @@ interface ILenderPool {
      * @notice create new Round on behalf of the lender, each deposit has its own round
      * @dev `lender` must approve the amount to be deposited first
      * @dev only `Owner` can launch a new round
-     * @dev only function that can be `Paused`
      * @dev add new round to `_lenderRounds`
      * @dev `amount` will be transferred from `lender` to `address(this)`
      * @dev emits Deposit event
