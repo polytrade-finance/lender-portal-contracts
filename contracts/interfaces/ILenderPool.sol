@@ -44,6 +44,21 @@ interface ILenderPool {
     ) external;
 
     /**
+     * @notice transfer tokens from the contract to the owner
+     * @dev only `Owner` can withdrawExtraTokens
+     * @param tokenContract address of the token to be transferred
+     * @param amount amount of tokens to be transferred
+     */
+    function withdrawExtraTokens(address tokenContract, uint amount)
+        external
+        onlyOwner
+    {
+        IERC20 tokenContract = IERC20(tokenContract);
+
+        tokenContract.transfer(owner(), amount);
+    }
+
+    /**
      * @notice Withdraw the initial deposit of the specified lender for the specified roundId
      * @notice claim rewards of the specified roundId for the specific lender
      * @dev only `Owner` can withdraw
