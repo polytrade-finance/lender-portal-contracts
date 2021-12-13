@@ -49,7 +49,7 @@ interface ILenderPool {
      * @param tokenAddress address of the token to be transferred
      * @param amount amount of tokens to be transferred
      */
-    function withdrawExtraTokens(address tokenContract, uint amount) external;
+    function withdrawExtraTokens(address tokenAddress, uint amount) external;
 
     /**
      * @notice Withdraw the initial deposit of the specified lender for the specified roundId
