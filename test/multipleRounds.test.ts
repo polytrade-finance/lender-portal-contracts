@@ -11,7 +11,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import {
   quickswapRouterAddress,
   TradeAddress,
@@ -245,9 +245,9 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should fail to withdraw if before the endPeriod", async (user: number = 1) => {
-      await expect(lenderPool.withdraw(addresses[user], 0)).to.be.revertedWith(
-        "Round is not finished yet"
-      );
+      await expect(
+        lenderPool.withdraw(addresses[user], 0, utils.parseEther("10"))
+      ).to.be.revertedWith("Round is not finished yet");
     });
 
     it("Should returns all finished rounds with no finished rounds", async (user: number = 1) => {
