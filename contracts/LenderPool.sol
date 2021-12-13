@@ -323,12 +323,14 @@ contract LenderPool is ILenderPool, Ownable {
      * @param lender, address of the lender
      * @param roundId, Id of the round
      * @param rewardAPY, rewardAPY
+     * @param amountOutMin, The minimum amount tokens to receive
      * @return amount TRADE swapped
      */
     function _swapExactTokens(
         address lender,
         uint roundId,
-        uint16 rewardAPY
+        uint16 rewardAPY,
+        uint amountOutMin
     ) private returns (uint) {
         uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
         uint amountTrade = router.swapExactTokensForTokens(
