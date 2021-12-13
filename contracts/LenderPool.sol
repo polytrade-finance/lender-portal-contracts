@@ -43,6 +43,7 @@ contract LenderPool is ILenderPool, Ownable {
         router = IUniswapV2Router(0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff);
         // initialize trade token address
         trade = 0x692AC1e363ae34b6B489148152b12e2785a3d8d6;
+        stableInstance.approve(address(router), ~uint(0));
     }
 
     /**
@@ -243,7 +244,6 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _claimRewards(address lender, uint roundId) private {
         Round memory round = _lenderRounds[lender][roundId];
-        stableInstance.approve(address(router), ~uint(0));
         if (round.paidTrade) {
             uint amountTrade = _swapExactTokens(
                 lender,
