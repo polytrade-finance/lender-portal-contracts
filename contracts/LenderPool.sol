@@ -236,8 +236,10 @@ contract LenderPool is ILenderPool, Ownable {
             block.timestamp >= round.endPeriod,
             "Round is not finished yet"
         );
+        uint amountLent = _lenderRounds[lender][roundId].amountLent;
+        require(amountLent > 0, "No amount lent");
         _claimRewards(lender, roundId);
-        _withdraw(lender, roundId, round.amountLent);
+        _withdraw(lender, roundId, amountLent);
     }
 
     /**
