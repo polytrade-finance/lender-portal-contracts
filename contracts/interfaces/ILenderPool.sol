@@ -87,11 +87,11 @@ interface ILenderPool {
     function getStableAPY() external view returns (uint16);
 
     /**
-     * @notice Returns the number of rounds for the a specific lender
+     * @notice Returns the latest round for a specific lender
      * @param lender, address of the lender to be checked
-     * @return returns the number of rounds for a specific Lender
+     * @return returns the latest round for a specific Lender
      */
-    function getNumberOfRounds(address lender) external view returns (uint);
+    function getLatestRound(address lender) external view returns (uint);
 
     /**
      * @notice Returns the total amount lent for the lender on every round
