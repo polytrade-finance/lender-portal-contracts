@@ -96,6 +96,9 @@ contract LenderPool is ILenderPool, Ownable {
         _lenderRounds[lender][_lenderInfo[lender].roundCount] = round;
         _lenderInfo[lender].roundCount++;
         _lenderInfo[lender].amountLent += amount;
+        totalDeposited += amount;
+        totalRounds++;
+
         stableInstance.safeTransferFrom(lender, address(this), amount);
         emit Deposit(lender, _lenderInfo[lender].roundCount - 1, amount);
     }
