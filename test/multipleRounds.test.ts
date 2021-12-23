@@ -138,7 +138,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (0)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(1);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(0);
     });
 
     it("Should return the total amount lent (0)", async (user: number = 1) => {
@@ -168,7 +168,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (1)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(2);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(1);
     });
 
     it("Should return the total amount lent (1)", async (user: number = 1) => {
@@ -186,7 +186,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (2)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(3);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(2);
     });
 
     it("Should return the total amount lent (2)", async (user: number = 1) => {
@@ -204,7 +204,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (3)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(4);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(3);
     });
 
     it("Should return the total amount lent (3)", async (user: number = 1) => {
@@ -222,7 +222,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (4)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(5);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(4);
     });
 
     it("Should return the total amount lent (4)", async (user: number = 1) => {
@@ -232,7 +232,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should returns rewards after 10 days (round0)", async (user: number = 1) => {
-      const rounds = await lenderPool.getNumberOfRounds(addresses[user]);
+      const rounds = await lenderPool.getLatestRound(addresses[user]);
       for (let i = 0; i < 10; i++) {
         for (let i = BigNumber.from(0); i < rounds; i = i.add(1)) {
           const stable = await lenderPool.stableRewardOf(addresses[user], 0);

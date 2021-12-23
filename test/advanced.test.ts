@@ -170,7 +170,7 @@ describe("LenderPool - Advanced", function () {
       });
 
       it("Should get all rounds for user0", async () => {
-        const count = await lenderPool1.getNumberOfRounds(addresses[0]);
+        const count = await lenderPool1.getLatestRound(addresses[0]);
         for (let i = BigNumber.from(0); i < count; i = i.add(1)) {
           const round = await lenderPool1.getRound(addresses[0], i);
           expect(round.amountLent).to.be.above(n6("100"));
