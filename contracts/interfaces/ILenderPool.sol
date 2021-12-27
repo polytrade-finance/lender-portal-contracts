@@ -5,23 +5,27 @@ interface ILenderPool {
     struct Round {
         bool paidTrade;
         uint16 bonusAPY;
+        uint64 startPeriod;
+        uint64 endPeriod;
         uint amountLent;
-        uint startPeriod;
-        uint endPeriod;
+    }
+
+    struct LenderInfo {
+        uint amountLent;
+        uint roundCount;
     }
 
     /**
      * @notice changes the minimum amount required for deposit (newRound)
-     * @dev update `minimumDeposit` with `_minimumDeposit`
-     * @param _minimumDeposit, new minimum deposit
+     * @dev update `minimumDeposit` with `newMinimumDeposit`
+     * @param newMinimumDeposit, new amount for minimum deposit
      */
-    function setMinimumDeposit(uint _minimumDeposit) external;
+    function setMinimumDeposit(uint newMinimumDeposit) external;
 
     /**
      * @notice create new Round on behalf of the lender, each deposit has its own round
      * @dev `lender` must approve the amount to be deposited first
      * @dev only `Owner` can launch a new round
-     * @dev only function that can be `Paused`
      * @dev add new round to `_lenderRounds`
      * @dev `amount` will be transferred from `lender` to `address(this)`
      * @dev emits Deposit event
@@ -35,9 +39,17 @@ interface ILenderPool {
         address lender,
         uint amount,
         uint16 bonusAPY,
-        uint8 tenure,
+        uint16 tenure,
         bool paidTrade
     ) external;
+
+    /**
+     * @notice transfer tokens from the contract to the owner
+     * @dev only `Owner` can withdrawExtraTokens
+     * @param tokenAddress address of the token to be transferred
+     * @param amount amount of tokens to be transferred
+     */
+    function withdrawExtraTokens(address tokenAddress, uint amount) external;
 
     /**
      * @notice Withdraw the initial deposit of the specified lender for the specified roundId
@@ -47,15 +59,20 @@ interface ILenderPool {
      * @dev run `_claimRewards` and `_withdraw`
      * @param lender, address of the lender
      * @param roundId, Id of the round
+     * @param amountOutMin, The minimum amount tokens to receive
      */
-    function withdraw(address lender, uint roundId) external;
+    function withdraw(
+        address lender,
+        uint roundId,
+        uint amountOutMin
+    ) external;
 
     /**
      * @notice Returns all the information of a specific round for a specific lender
      * @dev returns Round struct of the specific round for a specific lender
      * @param lender, address of the lender to be checked
      * @param roundId, Id of the round to be checked
-     * @return Round ({ bool paidTrade, uint16 bonusAPY, uint amountLent, uint startPeriod, uint endPeriod })
+     * @return Round ({ bool paidTrade, uint16 bonusAPY, uint amountLent, uint64 startPeriod, uint64 endPeriod })
      */
     function getRound(address lender, uint roundId)
         external
@@ -63,16 +80,23 @@ interface ILenderPool {
         returns (Round memory);
 
     /**
-     * @notice Returns the number of rounds for the a specific lender
-     * @param lender, address of the lender to be checked
-     * @return returns _roundCount[lender] (last known round)
+     * @notice Returns the stable APY for this pool
+     * @dev returns the stable APY
+     * @return uint16 of the stable APY
      */
-    function getNumberOfRounds(address lender) external view returns (uint);
+    function getStableAPY() external view returns (uint16);
+
+    /**
+     * @notice Returns the latest round for a specific lender
+     * @param lender, address of the lender to be checked
+     * @return returns the latest round for a specific Lender
+     */
+    function getLatestRound(address lender) external view returns (uint);
 
     /**
      * @notice Returns the total amount lent for the lender on every round
      * @param lender, address of the lender to be checked
-     * @return returns _amountLent[lender]
+     * @return returns amount lent by a lender
      */
     function getAmountLent(address lender) external view returns (uint);
 
@@ -109,6 +133,25 @@ interface ILenderPool {
         external
         view
         returns (uint);
+
+    /**
+     * @notice Returns the total amount of rewards for a specific lender on a specific roundId
+     * @dev calculate rewards for stable (stableAPY) and bonus (bonusAPY)
+     * @param lender, address of the lender to be checked
+     * @param roundId, Id of the round to be checked
+     * @return returns the total amount of rewards (stable + bonus) in stable (based on stableInstance)
+     */
+    function totalRewardOf(address lender, uint roundId)
+        external
+        returns (uint);
+
+    /**
+     * @dev Emitted when `minimumDeposit` is updated
+     */
+    event MinimumDepositUpdated(
+        uint previousMinimumDeposit,
+        uint newMinimumDeposit
+    );
 
     /**
      * @dev Emitted when `amount` tokens are deposited into a pool by generating a new Round

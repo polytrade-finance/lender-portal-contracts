@@ -11,8 +11,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { BigNumber } from "ethers";
-import { formatUnits } from "ethers/lib/utils";
+import { BigNumber, utils } from "ethers";
 import {
   quickswapRouterAddress,
   TradeAddress,
@@ -88,9 +87,6 @@ describe("LenderPool - Multiple Rounds", function () {
             value: n18("10000"),
           }
         );
-      console.log(
-        formatUnits(await USDCContract.balanceOf(addresses[10]), "6")
-      );
     }
   });
 
@@ -142,13 +138,25 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (0)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(1);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(0);
     });
 
     it("Should return the total amount lent (0)", async (user: number = 1) => {
       expect(await lenderPool.getAmountLent(addresses[user])).to.equal(
         n6("100")
       );
+    });
+
+    it("Should fail running new round with invalid tenure (more than 365)", async (user: number = 1) => {
+      await expect(
+        lenderPool.newRound(addresses[user], n6("110"), "1100", "366", false)
+      ).to.be.revertedWith("Invalid tenure");
+    });
+
+    it("Should fail running new round with invalid tenure (less than 30)", async (user: number = 1) => {
+      await expect(
+        lenderPool.newRound(addresses[user], n6("110"), "1100", "20", false)
+      ).to.be.revertedWith("Invalid tenure");
     });
 
     it("Should run new round (1)", async (user: number = 1) => {
@@ -160,7 +168,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (1)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(2);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(1);
     });
 
     it("Should return the total amount lent (1)", async (user: number = 1) => {
@@ -178,7 +186,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (2)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(3);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(2);
     });
 
     it("Should return the total amount lent (2)", async (user: number = 1) => {
@@ -196,7 +204,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (3)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(4);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(3);
     });
 
     it("Should return the total amount lent (3)", async (user: number = 1) => {
@@ -214,7 +222,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should return the number of rounds after new round (4)", async (user: number = 1) => {
-      expect(await lenderPool.getNumberOfRounds(addresses[user])).to.equal(5);
+      expect(await lenderPool.getLatestRound(addresses[user])).to.equal(4);
     });
 
     it("Should return the total amount lent (4)", async (user: number = 1) => {
@@ -224,7 +232,7 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should returns rewards after 10 days (round0)", async (user: number = 1) => {
-      const rounds = await lenderPool.getNumberOfRounds(addresses[user]);
+      const rounds = await lenderPool.getLatestRound(addresses[user]);
       for (let i = 0; i < 10; i++) {
         for (let i = BigNumber.from(0); i < rounds; i = i.add(1)) {
           const stable = await lenderPool.stableRewardOf(addresses[user], 0);
@@ -237,9 +245,9 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should fail to withdraw if before the endPeriod", async (user: number = 1) => {
-      await expect(lenderPool.withdraw(addresses[user], 0)).to.be.revertedWith(
-        "Round is not finished yet"
-      );
+      await expect(
+        lenderPool.withdraw(addresses[user], 0, utils.parseEther("10"))
+      ).to.be.revertedWith("Round is not finished yet");
     });
 
     it("Should returns all finished rounds with no finished rounds", async (user: number = 1) => {
@@ -316,6 +324,12 @@ describe("LenderPool - Multiple Rounds", function () {
         addresses[user]
       );
       expect(finishedRounds.length).to.equal(0);
+    });
+
+    it("Should fail running new round with invalid tenure (0)", async (user: number = 1) => {
+      await expect(
+        lenderPool.newRound(addresses[user], n6("110"), "1100", "0", false)
+      ).to.be.revertedWith("Invalid tenure");
     });
   });
 });

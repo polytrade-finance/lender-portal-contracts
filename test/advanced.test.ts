@@ -10,7 +10,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import {
   DAIAddress,
   extraTime,
@@ -142,6 +142,10 @@ describe("LenderPool - Advanced", function () {
       await USDTContract.transfer(lenderPool1.address, n6("10000"));
     });
 
+    it("Should return the Stable APY", async () => {
+      expect(await lenderPool1.getStableAPY()).to.equal(500);
+    });
+
     it("Should set the minimum deposit to 100 USDT", async () => {
       await lenderPool1.setMinimumDeposit(n6("100"));
     });
@@ -166,7 +170,7 @@ describe("LenderPool - Advanced", function () {
       });
 
       it("Should get all rounds for user0", async () => {
-        const count = await lenderPool1.getNumberOfRounds(addresses[0]);
+        const count = await lenderPool1.getLatestRound(addresses[0]);
         for (let i = BigNumber.from(0); i < count; i = i.add(1)) {
           const round = await lenderPool1.getRound(addresses[0], i);
           expect(round.amountLent).to.be.above(n6("100"));
@@ -189,7 +193,7 @@ describe("LenderPool - Advanced", function () {
 
       it("Should withdraw for user0 for round0", async () => {
         expect(await tradeContract.balanceOf(addresses[0])).to.equal(0);
-        await lenderPool1.withdraw(addresses[0], 0);
+        await lenderPool1.withdraw(addresses[0], 0, utils.parseEther("10"));
         await USDTContract.balanceOf(addresses[0]);
         expect(await tradeContract.balanceOf(addresses[0])).to.be.above(0);
       });
@@ -222,7 +226,7 @@ describe("LenderPool - Advanced", function () {
 
       it("Should withdraw for user1 for round0", async () => {
         expect(await tradeContract.balanceOf(addresses[1])).to.equal(0);
-        await lenderPool1.withdraw(addresses[1], 0);
+        await lenderPool1.withdraw(addresses[1], 0, utils.parseEther("0.5"));
         await USDTContract.balanceOf(addresses[1]);
         expect(await tradeContract.balanceOf(addresses[1])).to.be.above(0);
       });
@@ -255,7 +259,7 @@ describe("LenderPool - Advanced", function () {
 
       it("Should withdraw for user2 for round0", async () => {
         expect(await tradeContract.balanceOf(addresses[2])).to.equal(0);
-        await lenderPool1.withdraw(addresses[2], 0);
+        await lenderPool1.withdraw(addresses[2], 0, utils.parseEther("10"));
         await USDTContract.balanceOf(addresses[2]);
         expect(await tradeContract.balanceOf(addresses[2])).to.be.above(0);
       });
@@ -301,7 +305,7 @@ describe("LenderPool - Advanced", function () {
       });
 
       it("Should withdraw for user0 for round0", async () => {
-        await lenderPool2.withdraw(addresses[0], 0);
+        await lenderPool2.withdraw(addresses[0], 0, utils.parseEther("10"));
         await USDTContract.balanceOf(addresses[0]);
       });
     });
@@ -355,7 +359,20 @@ describe("LenderPool - Advanced", function () {
     });
 
     it("Should withdraw for user0 for round0", async () => {
-      await lenderPool3.withdraw(addresses[0], 0);
+      await lenderPool3.withdraw(addresses[0], 0, utils.parseEther("5"));
+    });
+
+    it("Should fail to withdraw if no amount lent", async () => {
+      await expect(
+        lenderPool3.withdraw(addresses[0], 0, utils.parseEther("5"))
+      ).to.be.revertedWith("No amount lent");
+    });
+
+    it("Should withdraw 100 DAI from LenderPool", async () => {
+      await lenderPool3.withdrawExtraTokens(
+        DAIAddress,
+        utils.parseEther("100")
+      );
     });
   });
 });
