@@ -4,6 +4,7 @@ pragma solidity ^0.8.10;
 interface ILenderPool {
     struct Round {
         bool paidTrade;
+        uint16 stableAPY;
         uint16 bonusAPY;
         uint64 startPeriod;
         uint64 endPeriod;
