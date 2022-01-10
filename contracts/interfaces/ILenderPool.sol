@@ -160,14 +160,10 @@ interface ILenderPool {
         address newTreasuryAddress
     );
 
-
     /**
      * @dev Emitted when Tenure is updated
      */
-    event TenureUpdated(
-        uint16 oldTenure,
-        uint16 newTenure
-    );
+    event TenureUpdated(uint16 oldTenure, uint16 newTenure);
 
     /**
      * @dev Emitted when `_stableAPY` is updated
