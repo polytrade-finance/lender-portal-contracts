@@ -121,18 +121,15 @@ contract LenderPool is ILenderPool, Ownable {
      * @param lender, address of the lender
      * @param amount, amount to be deposited by the lender, must be greater than minimumDeposit
      * @param bonusAPY, bonus ratio to be applied
-     * @param tenure, duration of the round (expressed in number in days), must be within 30 and 365
      * @param paidTrade, specifies whether if stable rewards will be paid in Trade(true) or in stable(false)
      */
     function newRound(
         address lender,
         uint amount,
         uint16 bonusAPY,
-        uint16 tenure,
         bool paidTrade
     ) external onlyOwner {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
-        require(tenure >= 30 && tenure <= 365, "Invalid tenure");
         Round memory round = Round({
             bonusAPY: bonusAPY,
             startPeriod: uint64(block.timestamp),
