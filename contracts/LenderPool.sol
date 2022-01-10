@@ -26,7 +26,7 @@ contract LenderPool is ILenderPool, Ownable {
     address public treasury;
 
     /// uint16 StableAPY of the pool
-    uint16 private immutable _stableAPY;
+    uint16 private _stableAPY;
 
     /// PRECISION constant for calculation purpose
     uint private constant PRECISION = 1E6;
