@@ -232,7 +232,12 @@ contract LenderPool is ILenderPool, Ownable {
         view
         returns (uint)
     {
-        return _calculateRewards(lender, roundId, _stableAPY);
+        return
+            _calculateRewards(
+                lender,
+                roundId,
+                _lenderRounds[lender][roundId].stableAPY
+            );
     }
 
     /**
@@ -267,7 +272,11 @@ contract LenderPool is ILenderPool, Ownable {
         view
         returns (uint)
     {
-        uint stableReward = _calculateRewards(lender, roundId, _stableAPY);
+        uint stableReward = _calculateRewards(
+            lender,
+            roundId,
+            _lenderRounds[lender][roundId].stableAPY
+        );
 
         uint bonusReward = _calculateRewards(
             lender,
