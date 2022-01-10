@@ -153,6 +153,28 @@ interface ILenderPool {
     );
 
     /**
+     * @dev Emitted when Treasury Address is updated
+     */
+    event NewTreasuryAddress(
+        address oldTreasuryAddress,
+        address newTreasuryAddress
+    );
+
+
+    /**
+     * @dev Emitted when Tenure is updated
+     */
+    event TenureUpdated(
+        uint16 oldTenure,
+        uint16 newTenure
+    );
+
+    /**
+     * @dev Emitted when `_stableAPY` is updated
+     */
+    event StableAPYUpdated(uint previousStableAPY, uint newStableAPY);
+
+    /**
      * @dev Emitted when `amount` tokens are deposited into a pool by generating a new Round
      */
     event Deposit(address indexed owner, uint indexed roundId, uint amount);
