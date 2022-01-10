@@ -150,18 +150,19 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice transfer tokens from the contract to the owner
-     * @dev only `Owner` can withdrawExtraTokens
+     * @notice transfer tokens from the contract to the treasury
+     * @dev only `Owner` can send to treasury
      * @param tokenAddress address of the token to be transferred
      * @param amount amount of tokens to be transferred
      */
-    function withdrawExtraTokens(address tokenAddress, uint amount)
+    function sendToTreasury(address tokenAddress, uint amount)
         external
         onlyOwner
     {
+        require(treasury != address(0), "Cannot send to address(0)");
         IERC20 tokenContract = IERC20(tokenAddress);
 
-        tokenContract.transfer(owner(), amount);
+        tokenContract.safeTransfer(treasury, amount);
     }
 
     /**
