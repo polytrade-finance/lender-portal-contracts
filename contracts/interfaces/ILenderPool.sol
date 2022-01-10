@@ -33,14 +33,12 @@ interface ILenderPool {
      * @param lender, address of the lender
      * @param amount, amount to be deposited by the lender, must be greater than minimumDeposit
      * @param bonusAPY, bonus ratio to be applied
-     * @param tenure, duration of the round (expressed in number in days)
      * @param paidTrade, specifies whether if stable rewards will be paid in Trade(true) or in stable(false)
      */
     function newRound(
         address lender,
         uint amount,
         uint16 bonusAPY,
-        uint16 tenure,
         bool paidTrade
     ) external;
 
