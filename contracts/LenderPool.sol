@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+
 /// @author Polytrade
 /// @title LenderPool V1
 contract LenderPool is ILenderPool, Ownable {
@@ -20,6 +21,9 @@ contract LenderPool is ILenderPool, Ownable {
 
     /// Address of the Trade token
     address public immutable trade;
+
+    /// Address of the Treasury
+    address public treasury;
 
     /// uint16 StableAPY of the pool
     uint16 private immutable _stableAPY;
