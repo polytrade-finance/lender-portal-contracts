@@ -49,9 +49,15 @@ contract LenderPool is ILenderPool, Ownable {
     /// _lenderRounds mapping that contains all roundIds and Round info for each lender
     mapping(address => mapping(uint => Round)) private _lenderRounds;
 
-    constructor(address stableAddress_, uint16 stableAPY_) {
+    constructor(
+        uint16 stableAPY_,
+        uint16 tenure_,
+        address stableAddress_,
+        address clientPortal_
+    ) {
         stableInstance = IERC20(stableAddress_);
         _stableAPY = stableAPY_;
+        tenure = tenure_;
         // initialize IUniswapV2Router router
         router = IUniswapV2Router(0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff);
         // initialize trade token address
