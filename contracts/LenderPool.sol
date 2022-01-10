@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.11;
 
 import "./interfaces/ILenderPool.sol";
 import "./interfaces/IUniswapV2Router.sol";
@@ -21,11 +21,17 @@ contract LenderPool is ILenderPool, Ownable {
     /// Address of the Trade token
     address public immutable trade;
 
+    /// Address of the Treasury
+    address public treasury;
+
     /// uint16 StableAPY of the pool
-    uint16 private immutable _stableAPY;
+    uint16 private _stableAPY;
 
     /// PRECISION constant for calculation purpose
     uint private constant PRECISION = 1E6;
+
+    /// duration of each round (expressed in number in days)
+    uint16 public tenure;
 
     /// uint minimum Deposit amount
     uint public minimumDeposit;
@@ -42,14 +48,21 @@ contract LenderPool is ILenderPool, Ownable {
     /// _lenderRounds mapping that contains all roundIds and Round info for each lender
     mapping(address => mapping(uint => Round)) private _lenderRounds;
 
-    constructor(address stableAddress_, uint16 stableAPY_) {
+    constructor(
+        uint16 stableAPY_,
+        uint16 tenure_,
+        address stableAddress_,
+        address clientPortal_
+    ) {
         stableInstance = IERC20(stableAddress_);
         _stableAPY = stableAPY_;
+        tenure = tenure_;
         // initialize IUniswapV2Router router
         router = IUniswapV2Router(0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff);
         // initialize trade token address
         trade = 0x692AC1e363ae34b6B489148152b12e2785a3d8d6;
         stableInstance.approve(address(router), ~uint(0));
+        stableInstance.approve(address(clientPortal_), ~uint(0));
     }
 
     /**
@@ -64,6 +77,40 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice changes the Stable APY
+     * @dev update `_stableAPY` with `newStableAPY`
+     * @param newStableAPY, new APY for the LenderPool
+     */
+    function setStableAPY(uint16 newStableAPY) external onlyOwner {
+        uint oldStableAPY = _stableAPY;
+        _stableAPY = newStableAPY;
+        emit StableAPYUpdated(oldStableAPY, newStableAPY);
+    }
+
+    /**
+     * @notice changes the tenure
+     * @dev update `tenure` with `newTenure`
+     * @param newTenure, new tenure for this LenderPool
+     */
+    function setTenure(uint16 newTenure) external onlyOwner {
+        require(newTenure >= 30 && newTenure <= 365, "Invalid tenure");
+        uint16 oldTenure = tenure;
+        tenure = newTenure;
+        emit TenureUpdated(oldTenure, newTenure);
+    }
+
+    /**
+     * @dev Set TreasuryAddress linked to the contract to a new treasuryAddress
+     * Can only be called by the owner
+     */
+    function setTreasuryAddress(address _newTreasury) external onlyOwner {
+        require(_newTreasury != address(0), "Cannot set address(0)");
+        address oldTreasury = treasury;
+        treasury = _newTreasury;
+        emit NewTreasuryAddress(oldTreasury, _newTreasury);
+    }
+
+    /**
      * @notice create new Round on behalf of the lender, each deposit has its own round
      * @dev `lender` must approve the amount to be deposited first
      * @dev only `Owner` can launch a new round
@@ -73,19 +120,17 @@ contract LenderPool is ILenderPool, Ownable {
      * @param lender, address of the lender
      * @param amount, amount to be deposited by the lender, must be greater than minimumDeposit
      * @param bonusAPY, bonus ratio to be applied
-     * @param tenure, duration of the round (expressed in number in days), must be within 30 and 365
      * @param paidTrade, specifies whether if stable rewards will be paid in Trade(true) or in stable(false)
      */
     function newRound(
         address lender,
         uint amount,
         uint16 bonusAPY,
-        uint16 tenure,
         bool paidTrade
     ) external onlyOwner {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
-        require(tenure >= 30 && tenure <= 365, "Invalid tenure");
         Round memory round = Round({
+            stableAPY: _stableAPY,
             bonusAPY: bonusAPY,
             startPeriod: uint64(block.timestamp),
             endPeriod: uint64(block.timestamp + (tenure * 1 days)),
@@ -104,32 +149,19 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice transfer tokens from the contract to the owner
-     * @dev only `Owner` can withdrawExtraTokens
+     * @notice transfer tokens from the contract to the treasury
+     * @dev only `Owner` can send to treasury
      * @param tokenAddress address of the token to be transferred
      * @param amount amount of tokens to be transferred
      */
-    function withdrawExtraTokens(address tokenAddress, uint amount)
+    function sendToTreasury(address tokenAddress, uint amount)
         external
         onlyOwner
     {
+        require(treasury != address(0), "Cannot send to address(0)");
         IERC20 tokenContract = IERC20(tokenAddress);
 
-        tokenContract.transfer(owner(), amount);
-    }
-
-    /**
-     * @notice Withdraw all amounts lent and claim rewards for all finished rounds
-     * @dev `withdraw` function is called for each finished round
-     * @dev only `Owner` can withdrawAllFinishedRounds
-     * @param lender, address of the lender
-     */
-    function withdrawAllFinishedRounds(address lender) external onlyOwner {
-        uint[] memory rounds = _getFinishedRounds(lender);
-
-        for (uint i = 0; i < rounds.length; i++) {
-            withdraw(lender, rounds[i], 0);
-        }
+        tokenContract.safeTransfer(treasury, amount);
     }
 
     /**
@@ -199,7 +231,12 @@ contract LenderPool is ILenderPool, Ownable {
         view
         returns (uint)
     {
-        return _calculateRewards(lender, roundId, _stableAPY);
+        return
+            _calculateRewards(
+                lender,
+                roundId,
+                _lenderRounds[lender][roundId].stableAPY
+            );
     }
 
     /**
@@ -234,7 +271,11 @@ contract LenderPool is ILenderPool, Ownable {
         view
         returns (uint)
     {
-        uint stableReward = _calculateRewards(lender, roundId, _stableAPY);
+        uint stableReward = _calculateRewards(
+            lender,
+            roundId,
+            _lenderRounds[lender][roundId].stableAPY
+        );
 
         uint bonusReward = _calculateRewards(
             lender,
@@ -289,24 +330,45 @@ contract LenderPool is ILenderPool, Ownable {
     ) private {
         Round memory round = _lenderRounds[lender][roundId];
         if (round.paidTrade) {
-            uint amountTrade = _swapExactTokens(
+            uint quotation = _getQuotation(
                 lender,
                 roundId,
-                (_stableAPY + round.bonusAPY),
-                amountOutMin
+                (round.stableAPY + round.bonusAPY)
             );
-            emit ClaimTrade(lender, roundId, amountTrade);
+            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
+                IERC20(trade).safeTransfer(lender, quotation);
+                emit ClaimTrade(lender, roundId, quotation);
+            } else {
+                uint amountTrade = _swapExactTokens(
+                    lender,
+                    roundId,
+                    (round.stableAPY + round.bonusAPY),
+                    amountOutMin
+                );
+                emit ClaimTrade(lender, roundId, amountTrade);
+            }
         } else {
-            uint amountStable = _calculateRewards(lender, roundId, _stableAPY);
+            uint amountStable = _calculateRewards(
+                lender,
+                roundId,
+                round.stableAPY
+            );
             stableInstance.safeTransfer(lender, amountStable);
             emit ClaimStable(lender, roundId, amountStable);
-            uint amountTrade = _swapExactTokens(
-                lender,
-                roundId,
-                round.bonusAPY,
-                amountOutMin
-            );
-            emit ClaimTrade(lender, roundId, amountTrade);
+
+            uint quotation = _getQuotation(lender, roundId, (round.bonusAPY));
+            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
+                IERC20(trade).safeTransfer(lender, quotation);
+                emit ClaimTrade(lender, roundId, quotation);
+            } else {
+                uint amountTrade = _swapExactTokens(
+                    lender,
+                    roundId,
+                    round.bonusAPY,
+                    amountOutMin
+                );
+                emit ClaimTrade(lender, roundId, amountTrade);
+            }
         }
     }
 
@@ -353,6 +415,24 @@ contract LenderPool is ILenderPool, Ownable {
             block.timestamp
         )[2];
         emit Swapped(amountStable, amountTrade);
+        return amountTrade;
+    }
+
+    /**
+     * @notice Get quotation for Trade(token) using IUniswap router interface
+     * @dev calls getAmountsOut to get a quotation for TRADE
+     * @param lender, address of the lender
+     * @param roundId, Id of the round
+     * @param rewardAPY, rewardAPY
+     * @return quotation of amount TRADE for stable
+     */
+    function _getQuotation(
+        address lender,
+        uint roundId,
+        uint16 rewardAPY
+    ) private returns (uint) {
+        uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
+        uint amountTrade = router.getAmountsOut(amountStable, _getPath())[2];
         return amountTrade;
     }
 

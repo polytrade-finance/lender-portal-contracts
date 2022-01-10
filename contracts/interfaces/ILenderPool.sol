@@ -4,6 +4,7 @@ pragma solidity ^0.8.10;
 interface ILenderPool {
     struct Round {
         bool paidTrade;
+        uint16 stableAPY;
         uint16 bonusAPY;
         uint64 startPeriod;
         uint64 endPeriod;
@@ -32,24 +33,22 @@ interface ILenderPool {
      * @param lender, address of the lender
      * @param amount, amount to be deposited by the lender, must be greater than minimumDeposit
      * @param bonusAPY, bonus ratio to be applied
-     * @param tenure, duration of the round (expressed in number in days)
      * @param paidTrade, specifies whether if stable rewards will be paid in Trade(true) or in stable(false)
      */
     function newRound(
         address lender,
         uint amount,
         uint16 bonusAPY,
-        uint16 tenure,
         bool paidTrade
     ) external;
 
     /**
-     * @notice transfer tokens from the contract to the owner
-     * @dev only `Owner` can withdrawExtraTokens
+     * @notice transfer tokens from the contract to the treasury
+     * @dev only `Owner` can send to treasury
      * @param tokenAddress address of the token to be transferred
      * @param amount amount of tokens to be transferred
      */
-    function withdrawExtraTokens(address tokenAddress, uint amount) external;
+    function sendToTreasury(address tokenAddress, uint amount) external;
 
     /**
      * @notice Withdraw the initial deposit of the specified lender for the specified roundId
@@ -152,6 +151,24 @@ interface ILenderPool {
         uint previousMinimumDeposit,
         uint newMinimumDeposit
     );
+
+    /**
+     * @dev Emitted when Treasury Address is updated
+     */
+    event NewTreasuryAddress(
+        address oldTreasuryAddress,
+        address newTreasuryAddress
+    );
+
+    /**
+     * @dev Emitted when Tenure is updated
+     */
+    event TenureUpdated(uint16 oldTenure, uint16 newTenure);
+
+    /**
+     * @dev Emitted when `_stableAPY` is updated
+     */
+    event StableAPYUpdated(uint previousStableAPY, uint newStableAPY);
 
     /**
      * @dev Emitted when `amount` tokens are deposited into a pool by generating a new Round
