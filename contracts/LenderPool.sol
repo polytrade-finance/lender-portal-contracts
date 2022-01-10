@@ -166,20 +166,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice Withdraw all amounts lent and claim rewards for all finished rounds
-     * @dev `withdraw` function is called for each finished round
-     * @dev only `Owner` can withdrawAllFinishedRounds
-     * @param lender, address of the lender
-     */
-    function withdrawAllFinishedRounds(address lender) external onlyOwner {
-        uint[] memory rounds = _getFinishedRounds(lender);
-
-        for (uint i = 0; i < rounds.length; i++) {
-            withdraw(lender, rounds[i], 0);
-        }
-    }
-
-    /**
      * @notice Returns the stable APY for this pool
      * @dev returns the stable APY
      * @return uint16 of the stable APY
