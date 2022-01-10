@@ -131,6 +131,7 @@ contract LenderPool is ILenderPool, Ownable {
     ) external onlyOwner {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
         Round memory round = Round({
+            stableAPY: _stableAPY,
             bonusAPY: bonusAPY,
             startPeriod: uint64(block.timestamp),
             endPeriod: uint64(block.timestamp + (tenure * 1 days)),
