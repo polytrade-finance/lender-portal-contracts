@@ -349,16 +349,27 @@ contract LenderPool is ILenderPool, Ownable {
                 emit ClaimTrade(lender, roundId, amountTrade);
             }
         } else {
-            uint amountStable = _calculateRewards(lender, roundId, _stableAPY);
-            stableInstance.safeTransfer(lender, amountStable);
-            emit ClaimStable(lender, roundId, amountStable);
-            uint amountTrade = _swapExactTokens(
+            uint amountStable = _calculateRewards(
                 lender,
                 roundId,
-                round.bonusAPY,
-                amountOutMin
+                round.stableAPY
             );
-            emit ClaimTrade(lender, roundId, amountTrade);
+            stableInstance.safeTransfer(lender, amountStable);
+            emit ClaimStable(lender, roundId, amountStable);
+
+            uint quotation = _getQuotation(lender, roundId, (round.bonusAPY));
+            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
+                IERC20(trade).safeTransfer(lender, quotation);
+                emit ClaimTrade(lender, roundId, quotation);
+            } else {
+                uint amountTrade = _swapExactTokens(
+                    lender,
+                    roundId,
+                    round.bonusAPY,
+                    amountOutMin
+                );
+                emit ClaimTrade(lender, roundId, amountTrade);
+            }
         }
     }
 
