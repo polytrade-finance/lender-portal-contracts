@@ -430,7 +430,7 @@ contract LenderPool is ILenderPool, Ownable {
         address lender,
         uint roundId,
         uint16 rewardAPY
-    ) private returns (uint) {
+    ) private view returns (uint) {
         uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
         uint amountTrade = router.getAmountsOut(amountStable, _getPath())[2];
         return amountTrade;
