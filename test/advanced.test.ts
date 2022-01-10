@@ -10,7 +10,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, utils, constants } from "ethers";
 import {
   DAIAddress,
   extraTime,
@@ -96,6 +96,27 @@ describe("LenderPool - Advanced", function () {
     }
   });
 
+  it("Should buy TRADE on quickswap", async () => {
+    quickswapRouter = await ethers.getContractAt(
+      "IUniswapV2Router",
+      quickswapRouterAddress,
+      accounts[0]
+    );
+
+    const path: string[] = [WMaticAddress, TradeAddress];
+
+    for (let i = 0; i < 10; i++) {
+      await quickswapRouter
+        .connect(accounts[i])
+        .swapExactETHForTokens(0, path, addresses[0], timestamp + extraTime, {
+          value: n18("10000"),
+        });
+      expect(await tradeContract.balanceOf(addresses[0])).to.be.above(
+        n6("100")
+      );
+    }
+  });
+
   it("Should buy DAI on quickswap", async () => {
     quickswapRouter = await ethers.getContractAt(
       "IUniswapV2Router",
@@ -134,12 +155,31 @@ describe("LenderPool - Advanced", function () {
   describe("LenderPool - 1 - StableAPY: 5%, USDT, minDeposit: 100 USDT", () => {
     it("Should return the LenderPool once it's deployed", async function () {
       LenderPoolFactory = await ethers.getContractFactory("LenderPool");
-      lenderPool1 = await LenderPoolFactory.deploy(USDTContract.address, "500");
+      lenderPool1 = await LenderPoolFactory.deploy(
+        "500",
+        "0",
+        USDTContract.address,
+        addresses[9]
+      );
       await lenderPool1.deployed();
       expect(
         await ethers.provider.getCode(lenderPool1.address)
       ).to.be.length.above(100);
       await USDTContract.transfer(lenderPool1.address, n6("10000"));
+
+      await tradeContract.transfer(lenderPool1.address, n18("2000"));
+    });
+
+    it("Should set the Stable APY to 1.0%", async () => {
+      await lenderPool1.setStableAPY("100");
+    });
+
+    it("Should return the Stable APY", async () => {
+      expect(await lenderPool1.getStableAPY()).to.equal(100);
+    });
+
+    it("Should set again Stable APY to 5.0%", async () => {
+      await lenderPool1.setStableAPY("500");
     });
 
     it("Should return the Stable APY", async () => {
@@ -150,16 +190,41 @@ describe("LenderPool - Advanced", function () {
       await lenderPool1.setMinimumDeposit(n6("100"));
     });
 
+    it("Should fail sending to treasury", async () => {
+      await expect(
+        lenderPool1.sendToTreasury(USDTContract.address, 1000)
+      ).to.be.revertedWith("Cannot send to address(0)");
+    });
+
+    it("Should fail updating treasury address", async () => {
+      await expect(
+        lenderPool1.setTreasuryAddress(constants.AddressZero)
+      ).to.be.revertedWith("Cannot set address(0)");
+    });
+
+    it("Should update treasury address", async () => {
+      await lenderPool1.setTreasuryAddress(addresses[5]);
+      expect(await lenderPool1.treasury()).to.equal(addresses[5]);
+    });
+
+    it("Should send to treasury", async () => {
+      await lenderPool1.sendToTreasury(USDTContract.address, 1000);
+    });
+
     describe("User0 - Round0, amount: 1000 USDT, bonusAPY: 10%, Tenure: 30, TradeBonus: true", () => {
       it("Should run new Rounds for user0", async () => {
         await USDTContract.approve(
           lenderPool1.address,
           ethers.constants.MaxUint256
         );
-        await lenderPool1.newRound(addresses[0], n6("1000"), "1000", 30, true);
-        await lenderPool1.newRound(addresses[0], n6("1100"), "1100", 31, false);
-        await lenderPool1.newRound(addresses[0], n6("1200"), "1200", 32, true);
-        await lenderPool1.newRound(addresses[0], n6("1300"), "1300", 33, false);
+        await lenderPool1.setTenure(30);
+        await lenderPool1.newRound(addresses[0], n6("1000"), "1000", true);
+        await lenderPool1.setTenure(31);
+        await lenderPool1.newRound(addresses[0], n6("1100"), "1100", false);
+        await lenderPool1.setTenure(32);
+        await lenderPool1.newRound(addresses[0], n6("1200"), "1200", true);
+        await lenderPool1.setTenure(33);
+        await lenderPool1.newRound(addresses[0], n6("1300"), "1300", false);
       });
 
       it("Should get round 0 from user0", async () => {
@@ -192,10 +257,14 @@ describe("LenderPool - Advanced", function () {
       });
 
       it("Should withdraw for user0 for round0", async () => {
-        expect(await tradeContract.balanceOf(addresses[0])).to.equal(0);
+        expect(await tradeContract.balanceOf(addresses[0])).to.equal(
+          "87398630804457563741971"
+        );
         await lenderPool1.withdraw(addresses[0], 0, utils.parseEther("10"));
         await USDTContract.balanceOf(addresses[0]);
-        expect(await tradeContract.balanceOf(addresses[0])).to.be.above(0);
+        expect(await tradeContract.balanceOf(addresses[0])).to.be.above(
+          "87398630804457563741971"
+        );
       });
     });
 
@@ -205,7 +274,9 @@ describe("LenderPool - Advanced", function () {
           lenderPool1.address,
           ethers.constants.MaxUint256
         );
-        await lenderPool1.newRound(addresses[1], n6("100"), "800", 30, true);
+        await lenderPool1.setTenure(30);
+
+        await lenderPool1.newRound(addresses[1], n6("100"), "800", true);
       });
 
       it("Should return stable rewards for user1 for round0 at the endPeriod", async () => {
@@ -238,7 +309,7 @@ describe("LenderPool - Advanced", function () {
           lenderPool1.address,
           ethers.constants.MaxUint256
         );
-        await lenderPool1.newRound(addresses[2], n6("1000"), "1000", 30, true);
+        await lenderPool1.newRound(addresses[2], n6("1000"), "1000", true);
       });
 
       it("Should return stable rewards for user2 for round0 at the endPeriod", async () => {
@@ -269,12 +340,21 @@ describe("LenderPool - Advanced", function () {
   describe("LenderPool - 2 - StableAPY: 8%, USDT, minDeposit: 1000 USDT", () => {
     it("Should return the LenderPool once it's deployed", async function () {
       LenderPoolFactory = await ethers.getContractFactory("LenderPool");
-      lenderPool2 = await LenderPoolFactory.deploy(USDTContract.address, "800");
+      lenderPool2 = await LenderPoolFactory.deploy(
+        "800",
+        "0",
+        USDTContract.address,
+        addresses[9]
+      );
       await lenderPool2.deployed();
       expect(
         await ethers.provider.getCode(lenderPool2.address)
       ).to.be.length.above(100);
       await USDTContract.transfer(lenderPool2.address, n6("10000"));
+      await tradeContract.transfer(
+        lenderPool2.address,
+        await tradeContract.balanceOf(addresses[0])
+      );
     });
 
     it("Should set the minimum deposit to 1000 USDT", async () => {
@@ -287,7 +367,9 @@ describe("LenderPool - Advanced", function () {
           lenderPool2.address,
           ethers.constants.MaxUint256
         );
-        await lenderPool2.newRound(addresses[0], n6("5000"), "700", 60, false);
+        await lenderPool2.setTenure(60);
+
+        await lenderPool2.newRound(addresses[0], n6("5000"), "700", false);
       });
 
       it("Should return stable rewards for user0 for round0 at the endPeriod", async () => {
@@ -317,7 +399,7 @@ describe("LenderPool - Advanced", function () {
           ethers.constants.MaxUint256
         );
         await expect(
-          lenderPool2.newRound(addresses[1], n6("500"), "900", 60, true)
+          lenderPool2.newRound(addresses[1], n6("500"), "900", true)
         ).to.be.revertedWith("Amount lower than minimumDeposit");
       });
     });
@@ -326,7 +408,12 @@ describe("LenderPool - Advanced", function () {
   describe("LenderPool - 3 - StableAPY: 6%, DAI, minDeposit: 100 DAI", () => {
     it("Should return the LenderPool once it's deployed", async function () {
       LenderPoolFactory = await ethers.getContractFactory("LenderPool");
-      lenderPool3 = await LenderPoolFactory.deploy(DAIContract.address, "600");
+      lenderPool3 = await LenderPoolFactory.deploy(
+        "600",
+        "0",
+        DAIContract.address,
+        addresses[9]
+      );
       await lenderPool3.deployed();
       expect(
         await ethers.provider.getCode(lenderPool3.address)
@@ -340,11 +427,13 @@ describe("LenderPool - Advanced", function () {
     });
 
     it("Should run new Rounds for user0", async () => {
+      await lenderPool3.setTenure(30);
+
       await DAIContract.approve(
         lenderPool3.address,
         ethers.constants.MaxUint256
       );
-      await lenderPool3.newRound(addresses[0], n18("500"), "1100", 30, false);
+      await lenderPool3.newRound(addresses[0], n18("500"), "1100", false);
     });
 
     it("Should return stable rewards for user0 for round0 at the endPeriod", async () => {
@@ -368,11 +457,11 @@ describe("LenderPool - Advanced", function () {
       ).to.be.revertedWith("No amount lent");
     });
 
-    it("Should withdraw 100 DAI from LenderPool", async () => {
-      await lenderPool3.withdrawExtraTokens(
-        DAIAddress,
-        utils.parseEther("100")
-      );
-    });
+    // it("Should withdraw 100 DAI from LenderPool", async () => {
+    //   await lenderPool3.withdrawExtraTokens(
+    //     DAIAddress,
+    //     utils.parseEther("100")
+    //   );
+    // });
   });
 });

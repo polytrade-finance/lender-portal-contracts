@@ -100,7 +100,12 @@ describe("LenderPool - Multiple Rounds", function () {
   describe("LenderPool - 1 - StableAPY: 10%, USDC, minDeposit: 100 USDC", () => {
     it("Should return the LenderPool once it's deployed", async function () {
       LenderPoolFactory = await ethers.getContractFactory("LenderPool");
-      lenderPool = await LenderPoolFactory.deploy(USDCContract.address, "1000");
+      lenderPool = await LenderPoolFactory.deploy(
+        "1000",
+        "0",
+        USDCContract.address,
+        addresses[9]
+      );
       await lenderPool.deployed();
       expect(
         await ethers.provider.getCode(lenderPool.address)
@@ -125,12 +130,14 @@ describe("LenderPool - Multiple Rounds", function () {
 
     it("Should fail running a new round (0) with lower amount", async (user: number = 1) => {
       await expect(
-        lenderPool.newRound(addresses[user], n6("10"), "1000", 60, false)
+        lenderPool.newRound(addresses[user], n6("10"), "1000", false)
       ).to.be.revertedWith("Amount lower than minimumDeposit");
     });
 
     it("Should run new round (0)", async (user: number = 1) => {
-      await lenderPool.newRound(addresses[user], n6("100"), "1000", 60, false);
+      await lenderPool.setTenure(60);
+
+      await lenderPool.newRound(addresses[user], n6("100"), "1000", false);
       const round = await lenderPool.getRound(addresses[user], 0);
       expect(round.amountLent).to.equal(n6("100"));
       expect(round.bonusAPY).to.equal(1000);
@@ -147,20 +154,22 @@ describe("LenderPool - Multiple Rounds", function () {
       );
     });
 
-    it("Should fail running new round with invalid tenure (more than 365)", async (user: number = 1) => {
-      await expect(
-        lenderPool.newRound(addresses[user], n6("110"), "1100", "366", false)
-      ).to.be.revertedWith("Invalid tenure");
+    it("Should fail running new round with invalid tenure (more than 365)", async () => {
+      await expect(lenderPool.setTenure(366)).to.be.revertedWith(
+        "Invalid tenure"
+      );
     });
 
-    it("Should fail running new round with invalid tenure (less than 30)", async (user: number = 1) => {
-      await expect(
-        lenderPool.newRound(addresses[user], n6("110"), "1100", "20", false)
-      ).to.be.revertedWith("Invalid tenure");
+    it("Should fail running new round with invalid tenure (less than 30)", async () => {
+      await expect(lenderPool.setTenure(20)).to.be.revertedWith(
+        "Invalid tenure"
+      );
     });
 
     it("Should run new round (1)", async (user: number = 1) => {
-      await lenderPool.newRound(addresses[user], n6("110"), "1100", 120, false);
+      await lenderPool.setTenure(120);
+
+      await lenderPool.newRound(addresses[user], n6("110"), "1100", false);
       const round = await lenderPool.getRound(addresses[user], 1);
       expect(round.amountLent).to.equal(n6("110"));
       expect(round.bonusAPY).to.equal(1100);
@@ -178,7 +187,9 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should run new round (2)", async (user: number = 1) => {
-      await lenderPool.newRound(addresses[user], n6("120"), "1200", 30, true);
+      await lenderPool.setTenure(30);
+
+      await lenderPool.newRound(addresses[user], n6("120"), "1200", true);
       const round = await lenderPool.getRound(addresses[user], 2);
       expect(round.amountLent).to.equal(n6("120"));
       expect(round.bonusAPY).to.equal(1200);
@@ -196,7 +207,9 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should run new round (3)", async (user: number = 1) => {
-      await lenderPool.newRound(addresses[user], n6("130"), "1300", 90, true);
+      await lenderPool.setTenure(90);
+
+      await lenderPool.newRound(addresses[user], n6("130"), "1300", true);
       const round = await lenderPool.getRound(addresses[user], 3);
       expect(round.amountLent).to.equal(n6("130"));
       expect(round.bonusAPY).to.equal(1300);
@@ -214,7 +227,9 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should run new round (4)", async (user: number = 1) => {
-      await lenderPool.newRound(addresses[user], n6("140"), "1400", 150, true);
+      await lenderPool.setTenure(150);
+
+      await lenderPool.newRound(addresses[user], n6("140"), "1400", true);
       const round = await lenderPool.getRound(addresses[user], 4);
       expect(round.amountLent).to.equal(n6("140"));
       expect(round.bonusAPY).to.equal(1400);
@@ -310,7 +325,13 @@ describe("LenderPool - Multiple Rounds", function () {
       expect(balanceUSDCBefore).to.equal(n6("4400"));
       const balanceTradeBefore = await tradeContract.balanceOf(addresses[user]);
 
-      await lenderPool.withdrawAllFinishedRounds(addresses[user]);
+      const finishedRounds = await lenderPool.getFinishedRounds(
+        addresses[user]
+      );
+
+      for (const res of finishedRounds) {
+        await lenderPool.withdraw(addresses[user], res, 0);
+      }
 
       const balanceUSDCAfter = await USDCContract.balanceOf(addresses[user]);
       expect(balanceUSDCAfter).to.equal(n6("5005.260273"));
@@ -327,9 +348,9 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should fail running new round with invalid tenure (0)", async (user: number = 1) => {
-      await expect(
-        lenderPool.newRound(addresses[user], n6("110"), "1100", "0", false)
-      ).to.be.revertedWith("Invalid tenure");
+      await expect(lenderPool.setTenure(0)).to.be.revertedWith(
+        "Invalid tenure"
+      );
     });
   });
 });
