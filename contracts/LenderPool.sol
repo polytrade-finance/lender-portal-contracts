@@ -78,6 +78,40 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice changes the Stable APY
+     * @dev update `_stableAPY` with `newStableAPY`
+     * @param newStableAPY, new APY for the LenderPool
+     */
+    function setStableAPY(uint16 newStableAPY) external onlyOwner {
+        uint oldStableAPY = _stableAPY;
+        _stableAPY = newStableAPY;
+        emit StableAPYUpdated(oldStableAPY, newStableAPY);
+    }
+
+    /**
+    * @notice changes the tenure
+     * @dev update `tenure` with `newTenure`
+     * @param newTenure, new tenure for this LenderPool
+     */
+    function setTenure(uint16 newTenure) external onlyOwner {
+        require(newTenure >= 30 && newTenure <= 365, "Invalid tenure");
+        uint16 oldTenure = tenure;
+        tenure = newTenure;
+        emit TenureUpdated(oldTenure, newTenure);
+    }
+
+    /**
+     * @dev Set TreasuryAddress linked to the contract to a new treasuryAddress
+     * Can only be called by the owner
+     */
+    function setTreasuryAddress(address _newTreasury) external onlyOwner {
+        require(_newTreasury != address(0), "Cannot set address(0)");
+        address oldTreasury = treasury;
+        treasury = _newTreasury;
+        emit NewTreasuryAddress(oldTreasury, _newTreasury);
+    }
+
+    /**
      * @notice create new Round on behalf of the lender, each deposit has its own round
      * @dev `lender` must approve the amount to be deposited first
      * @dev only `Owner` can launch a new round
