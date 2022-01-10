@@ -331,13 +331,23 @@ contract LenderPool is ILenderPool, Ownable {
     ) private {
         Round memory round = _lenderRounds[lender][roundId];
         if (round.paidTrade) {
-            uint amountTrade = _swapExactTokens(
+            uint quotation = _getQuotation(
                 lender,
                 roundId,
-                (_stableAPY + round.bonusAPY),
-                amountOutMin
+                (round.stableAPY + round.bonusAPY)
             );
-            emit ClaimTrade(lender, roundId, amountTrade);
+            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
+                IERC20(trade).safeTransfer(lender, quotation);
+                emit ClaimTrade(lender, roundId, quotation);
+            } else {
+                uint amountTrade = _swapExactTokens(
+                    lender,
+                    roundId,
+                    (round.stableAPY + round.bonusAPY),
+                    amountOutMin
+                );
+                emit ClaimTrade(lender, roundId, amountTrade);
+            }
         } else {
             uint amountStable = _calculateRewards(lender, roundId, _stableAPY);
             stableInstance.safeTransfer(lender, amountStable);
