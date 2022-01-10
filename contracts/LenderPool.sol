@@ -31,6 +31,9 @@ contract LenderPool is ILenderPool, Ownable {
     /// PRECISION constant for calculation purpose
     uint private constant PRECISION = 1E6;
 
+    /// duration of each round (expressed in number in days)
+    uint16 public tenure;
+
     /// uint minimum Deposit amount
     uint public minimumDeposit;
 
