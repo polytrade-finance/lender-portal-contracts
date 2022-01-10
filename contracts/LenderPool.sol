@@ -420,6 +420,24 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice Get quotation for Trade(token) using IUniswap router interface
+     * @dev calls getAmountsOut to get a quotation for TRADE
+     * @param lender, address of the lender
+     * @param roundId, Id of the round
+     * @param rewardAPY, rewardAPY
+     * @return quotation of amount TRADE for stable
+     */
+    function _getQuotation(
+        address lender,
+        uint roundId,
+        uint16 rewardAPY
+    ) private returns (uint) {
+        uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
+        uint amountTrade = router.getAmountsOut(amountStable, _getPath())[2];
+        return amountTrade;
+    }
+
+    /**
      * @notice Calculate the amount of rewards
      * @dev ((rewardAPY * amountLent * timePassed) / 365)
      * @param lender, address of the lender
