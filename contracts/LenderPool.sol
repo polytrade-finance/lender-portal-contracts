@@ -39,7 +39,10 @@ contract LenderPool is ILenderPool, Ownable {
     /// uint total rounds
     uint public totalRounds;
 
-    /// uint total deposited
+    /// uint total liquidity (Current deposited)
+    uint public totalLiquidity;
+
+    /// uint total deposited (Since Pool creation)
     uint public totalDeposited;
 
     /// _lenderInfo mapping of the total amountLent and counts the amount of round for each lender
@@ -142,6 +145,7 @@ contract LenderPool is ILenderPool, Ownable {
         _lenderInfo[lender].roundCount++;
         _lenderInfo[lender].amountLent += amount;
         totalDeposited += amount;
+        totalLiquidity += amount;
         totalRounds++;
 
         stableInstance.safeTransferFrom(lender, address(this), amount);
@@ -378,6 +382,7 @@ contract LenderPool is ILenderPool, Ownable {
     ) private {
         _lenderInfo[lender].amountLent -= amount;
         _lenderRounds[lender][roundId].amountLent -= amount;
+        totalLiquidity -= amount;
         stableInstance.safeTransfer(lender, amount);
         emit Withdraw(lender, roundId, amount);
     }
