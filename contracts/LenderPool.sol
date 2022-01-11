@@ -164,7 +164,6 @@ contract LenderPool is ILenderPool, Ownable {
         external
         onlyOwner
     {
-        require(treasury != address(0), "Cannot send to address(0)");
         IERC20 tokenContract = IERC20(tokenAddress);
 
         tokenContract.safeTransfer(treasury, amount);
