@@ -11,7 +11,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { BigNumber, utils } from "ethers";
+import { utils } from "ethers";
 import {
   quickswapRouterAddress,
   TradeAddress,
