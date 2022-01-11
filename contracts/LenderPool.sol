@@ -25,7 +25,7 @@ contract LenderPool is ILenderPool, Ownable {
     address public treasury;
 
     /// uint16 StableAPY of the pool
-    uint16 private _stableAPY;
+    uint16 public stableAPY;
 
     /// PRECISION constant for calculation purpose
     uint private constant PRECISION = 1E6;
@@ -55,7 +55,7 @@ contract LenderPool is ILenderPool, Ownable {
         address clientPortal_
     ) {
         stableInstance = IERC20(stableAddress_);
-        _stableAPY = stableAPY_;
+        stableAPY = stableAPY_;
         tenure = tenure_;
         // initialize IUniswapV2Router router
         router = IUniswapV2Router(0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff);
@@ -82,8 +82,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @param newStableAPY, new APY for the LenderPool
      */
     function setStableAPY(uint16 newStableAPY) external onlyOwner {
-        uint oldStableAPY = _stableAPY;
-        _stableAPY = newStableAPY;
+        uint oldStableAPY = stableAPY;
+        stableAPY = newStableAPY;
         emit StableAPYUpdated(oldStableAPY, newStableAPY);
     }
 
@@ -130,7 +130,7 @@ contract LenderPool is ILenderPool, Ownable {
     ) external onlyOwner {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
         Round memory round = Round({
-            stableAPY: _stableAPY,
+            stableAPY: stableAPY,
             bonusAPY: bonusAPY,
             startPeriod: uint64(block.timestamp),
             endPeriod: uint64(block.timestamp + (tenure * 1 days)),
@@ -162,15 +162,6 @@ contract LenderPool is ILenderPool, Ownable {
         IERC20 tokenContract = IERC20(tokenAddress);
 
         tokenContract.safeTransfer(treasury, amount);
-    }
-
-    /**
-     * @notice Returns the stable APY for this pool
-     * @dev returns the stable APY
-     * @return uint16 of the stable APY
-     */
-    function getStableAPY() external view returns (uint16) {
-        return _stableAPY;
     }
 
     /**
