@@ -6,8 +6,8 @@ interface ILenderPool {
         bool paidTrade;
         uint16 stableAPY;
         uint16 bonusAPY;
-        uint64 startPeriod;
-        uint64 endPeriod;
+        uint48 startPeriod;
+        uint48 endPeriod;
         uint amountLent;
     }
 

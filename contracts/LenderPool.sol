@@ -137,8 +137,8 @@ contract LenderPool is ILenderPool, Ownable {
         Round memory round = Round({
             stableAPY: stableAPY,
             bonusAPY: bonusAPY,
-            startPeriod: uint64(block.timestamp),
-            endPeriod: uint64(block.timestamp + (tenure * 1 days)),
+            startPeriod: uint48(block.timestamp),
+            endPeriod: uint48(block.timestamp + (tenure * 1 days)),
             amountLent: amount,
             paidTrade: paidTrade
         });
