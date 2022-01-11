@@ -11,7 +11,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { BigNumber, utils } from "ethers";
+import { utils } from "ethers";
 import {
   quickswapRouterAddress,
   TradeAddress,
@@ -104,7 +104,8 @@ describe("LenderPool - Multiple Rounds", function () {
         "1000",
         "0",
         USDCContract.address,
-        addresses[9]
+        addresses[9],
+        TradeAddress
       );
       await lenderPool.deployed();
       expect(
@@ -246,19 +247,6 @@ describe("LenderPool - Multiple Rounds", function () {
       );
     });
 
-    it("Should returns rewards after 10 days (round0)", async (user: number = 1) => {
-      const rounds = await lenderPool.getLatestRound(addresses[user]);
-      for (let i = 0; i < 10; i++) {
-        for (let i = BigNumber.from(0); i < rounds; i = i.add(1)) {
-          const stable = await lenderPool.stableRewardOf(addresses[user], 0);
-          const bonus = await lenderPool.bonusRewardOf(addresses[user], 0);
-          const total = await lenderPool.totalRewardOf(addresses[user], 0);
-          expect(total).to.equal(stable.add(bonus));
-        }
-        await increaseTime(ONE_DAY);
-      }
-    });
-
     it("Should fail to withdraw if before the endPeriod", async (user: number = 1) => {
       await expect(
         lenderPool.withdraw(addresses[user], 0, utils.parseEther("10"))
@@ -269,14 +257,16 @@ describe("LenderPool - Multiple Rounds", function () {
       const finishedRounds = await lenderPool.getFinishedRounds(
         addresses[user]
       );
+      console.log(finishedRounds.toString());
       expect(finishedRounds.length).to.equal(0);
     });
 
-    it("Should returns all finished rounds after 10 + 20 days (30days passed)", async (user: number = 1) => {
-      await increaseTime(ONE_DAY * 20);
+    it("Should returns all finished rounds after 30 days (30days passed)", async (user: number = 1) => {
+      await increaseTime(ONE_DAY * 30);
       const finishedRounds = await lenderPool.getFinishedRounds(
         addresses[user]
       );
+
       expect(finishedRounds.length).to.equal(1);
     });
 

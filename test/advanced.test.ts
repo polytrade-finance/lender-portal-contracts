@@ -159,7 +159,8 @@ describe("LenderPool - Advanced", function () {
         "500",
         "0",
         USDTContract.address,
-        addresses[9]
+        addresses[9],
+        TradeAddress
       );
       await lenderPool1.deployed();
       expect(
@@ -175,7 +176,7 @@ describe("LenderPool - Advanced", function () {
     });
 
     it("Should return the Stable APY", async () => {
-      expect(await lenderPool1.getStableAPY()).to.equal(100);
+      expect(await lenderPool1.stableAPY()).to.equal(100);
     });
 
     it("Should set again Stable APY to 5.0%", async () => {
@@ -183,7 +184,7 @@ describe("LenderPool - Advanced", function () {
     });
 
     it("Should return the Stable APY", async () => {
-      expect(await lenderPool1.getStableAPY()).to.equal(500);
+      expect(await lenderPool1.stableAPY()).to.equal(500);
     });
 
     it("Should set the minimum deposit to 100 USDT", async () => {
@@ -193,13 +194,12 @@ describe("LenderPool - Advanced", function () {
     it("Should fail sending to treasury", async () => {
       await expect(
         lenderPool1.sendToTreasury(USDTContract.address, 1000)
-      ).to.be.revertedWith("Cannot send to address(0)");
+      ).to.be.revertedWith("ERC20: transfer to the zero address");
     });
 
     it("Should fail updating treasury address", async () => {
-      await expect(
-        lenderPool1.setTreasuryAddress(constants.AddressZero)
-      ).to.be.revertedWith("Cannot set address(0)");
+      await expect(lenderPool1.setTreasuryAddress(constants.AddressZero)).to.be
+        .reverted;
     });
 
     it("Should update treasury address", async () => {
@@ -344,7 +344,8 @@ describe("LenderPool - Advanced", function () {
         "800",
         "0",
         USDTContract.address,
-        addresses[9]
+        addresses[9],
+        TradeAddress
       );
       await lenderPool2.deployed();
       expect(
@@ -398,9 +399,8 @@ describe("LenderPool - Advanced", function () {
           lenderPool2.address,
           ethers.constants.MaxUint256
         );
-        await expect(
-          lenderPool2.newRound(addresses[1], n6("500"), "900", true)
-        ).to.be.revertedWith("Amount lower than minimumDeposit");
+        await expect(lenderPool2.newRound(addresses[1], n6("500"), "900", true))
+          .to.be.reverted;
       });
     });
   });
@@ -412,7 +412,8 @@ describe("LenderPool - Advanced", function () {
         "600",
         "0",
         DAIContract.address,
-        addresses[9]
+        addresses[9],
+        TradeAddress
       );
       await lenderPool3.deployed();
       expect(

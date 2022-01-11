@@ -25,7 +25,7 @@ contract LenderPool is ILenderPool, Ownable {
     address public treasury;
 
     /// uint16 StableAPY of the pool
-    uint16 private _stableAPY;
+    uint16 public stableAPY;
 
     /// PRECISION constant for calculation purpose
     uint private constant PRECISION = 1E6;
@@ -39,7 +39,10 @@ contract LenderPool is ILenderPool, Ownable {
     /// uint total rounds
     uint public totalRounds;
 
-    /// uint total deposited
+    /// uint total liquidity (Current deposited)
+    uint public totalLiquidity;
+
+    /// uint total deposited (Since Pool creation)
     uint public totalDeposited;
 
     /// _lenderInfo mapping of the total amountLent and counts the amount of round for each lender
@@ -52,15 +55,17 @@ contract LenderPool is ILenderPool, Ownable {
         uint16 stableAPY_,
         uint16 tenure_,
         address stableAddress_,
-        address clientPortal_
+        address clientPortal_,
+        address tradeToken_
     ) {
         stableInstance = IERC20(stableAddress_);
-        _stableAPY = stableAPY_;
+        stableAPY = stableAPY_;
         tenure = tenure_;
         // initialize IUniswapV2Router router
         router = IUniswapV2Router(0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff);
         // initialize trade token address
-        trade = 0x692AC1e363ae34b6B489148152b12e2785a3d8d6;
+        trade = tradeToken_;
+
         stableInstance.approve(address(router), ~uint(0));
         stableInstance.approve(address(clientPortal_), ~uint(0));
     }
@@ -82,8 +87,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @param newStableAPY, new APY for the LenderPool
      */
     function setStableAPY(uint16 newStableAPY) external onlyOwner {
-        uint oldStableAPY = _stableAPY;
-        _stableAPY = newStableAPY;
+        uint oldStableAPY = stableAPY;
+        stableAPY = newStableAPY;
         emit StableAPYUpdated(oldStableAPY, newStableAPY);
     }
 
@@ -130,10 +135,10 @@ contract LenderPool is ILenderPool, Ownable {
     ) external onlyOwner {
         require(amount >= minimumDeposit, "Amount lower than minimumDeposit");
         Round memory round = Round({
-            stableAPY: _stableAPY,
+            stableAPY: stableAPY,
             bonusAPY: bonusAPY,
-            startPeriod: uint64(block.timestamp),
-            endPeriod: uint64(block.timestamp + (tenure * 1 days)),
+            startPeriod: uint48(block.timestamp),
+            endPeriod: uint48(block.timestamp + (tenure * 1 days)),
             amountLent: amount,
             paidTrade: paidTrade
         });
@@ -142,6 +147,7 @@ contract LenderPool is ILenderPool, Ownable {
         _lenderInfo[lender].roundCount++;
         _lenderInfo[lender].amountLent += amount;
         totalDeposited += amount;
+        totalLiquidity += amount;
         totalRounds++;
 
         stableInstance.safeTransferFrom(lender, address(this), amount);
@@ -158,19 +164,9 @@ contract LenderPool is ILenderPool, Ownable {
         external
         onlyOwner
     {
-        require(treasury != address(0), "Cannot send to address(0)");
         IERC20 tokenContract = IERC20(tokenAddress);
 
         tokenContract.safeTransfer(treasury, amount);
-    }
-
-    /**
-     * @notice Returns the stable APY for this pool
-     * @dev returns the stable APY
-     * @return uint16 of the stable APY
-     */
-    function getStableAPY() external view returns (uint16) {
-        return _stableAPY;
     }
 
     /**
@@ -260,33 +256,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice Returns the total amount of rewards for a specific lender on a specific roundId
-     * @dev calculate rewards for stable (stableAPY) and bonus (bonusAPY)
-     * @param lender, address of the lender to be checked
-     * @param roundId, Id of the round to be checked
-     * @return returns the total amount of rewards (stable + bonus) in stable (based on stableInstance)
-     */
-    function totalRewardOf(address lender, uint roundId)
-        external
-        view
-        returns (uint)
-    {
-        uint stableReward = _calculateRewards(
-            lender,
-            roundId,
-            _lenderRounds[lender][roundId].stableAPY
-        );
-
-        uint bonusReward = _calculateRewards(
-            lender,
-            roundId,
-            _lenderRounds[lender][roundId].bonusAPY
-        );
-
-        return stableReward + bonusReward;
-    }
-
-    /**
      * @notice Withdraw the initial deposit of the specified lender for the specified roundId
      * @notice claim rewards of the specified roundId for the specific lender
      * @dev only `Owner` can withdraw
@@ -330,23 +299,12 @@ contract LenderPool is ILenderPool, Ownable {
     ) private {
         Round memory round = _lenderRounds[lender][roundId];
         if (round.paidTrade) {
-            uint quotation = _getQuotation(
+            _distributeRewards(
                 lender,
                 roundId,
-                (round.stableAPY + round.bonusAPY)
+                (round.stableAPY + round.bonusAPY),
+                amountOutMin
             );
-            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
-                IERC20(trade).safeTransfer(lender, quotation);
-                emit ClaimTrade(lender, roundId, quotation);
-            } else {
-                uint amountTrade = _swapExactTokens(
-                    lender,
-                    roundId,
-                    (round.stableAPY + round.bonusAPY),
-                    amountOutMin
-                );
-                emit ClaimTrade(lender, roundId, amountTrade);
-            }
         } else {
             uint amountStable = _calculateRewards(
                 lender,
@@ -356,19 +314,31 @@ contract LenderPool is ILenderPool, Ownable {
             stableInstance.safeTransfer(lender, amountStable);
             emit ClaimStable(lender, roundId, amountStable);
 
-            uint quotation = _getQuotation(lender, roundId, (round.bonusAPY));
-            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
-                IERC20(trade).safeTransfer(lender, quotation);
-                emit ClaimTrade(lender, roundId, quotation);
-            } else {
-                uint amountTrade = _swapExactTokens(
-                    lender,
-                    roundId,
-                    round.bonusAPY,
-                    amountOutMin
-                );
-                emit ClaimTrade(lender, roundId, amountTrade);
-            }
+            _distributeRewards(lender, roundId, round.bonusAPY, amountOutMin);
+        }
+    }
+
+    function _distributeRewards(
+        address lender,
+        uint roundId,
+        uint16 rewardAPY,
+        uint amountOutMin
+    ) private {
+        uint balance = IERC20(trade).balanceOf(address(this));
+
+        uint quotation = _getQuotation(lender, roundId, rewardAPY);
+
+        if (balance >= quotation) {
+            IERC20(trade).safeTransfer(lender, quotation);
+            emit ClaimTrade(lender, roundId, quotation);
+        } else {
+            uint amountTrade = _swapExactTokens(
+                lender,
+                roundId,
+                rewardAPY,
+                amountOutMin
+            );
+            emit ClaimTrade(lender, roundId, amountTrade);
         }
     }
 
@@ -387,6 +357,7 @@ contract LenderPool is ILenderPool, Ownable {
     ) private {
         _lenderInfo[lender].amountLent -= amount;
         _lenderRounds[lender][roundId].amountLent -= amount;
+        totalLiquidity -= amount;
         stableInstance.safeTransfer(lender, amount);
         emit Withdraw(lender, roundId, amount);
     }
