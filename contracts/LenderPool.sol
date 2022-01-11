@@ -314,19 +314,31 @@ contract LenderPool is ILenderPool, Ownable {
             stableInstance.safeTransfer(lender, amountStable);
             emit ClaimStable(lender, roundId, amountStable);
 
-            uint quotation = _getQuotation(lender, roundId, (round.bonusAPY));
-            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
-                IERC20(trade).safeTransfer(lender, quotation);
-                emit ClaimTrade(lender, roundId, quotation);
-            } else {
-                uint amountTrade = _swapExactTokens(
-                    lender,
-                    roundId,
-                    round.bonusAPY,
-                    amountOutMin
-                );
-                emit ClaimTrade(lender, roundId, amountTrade);
-            }
+            _distributeRewards(lender, roundId, round.bonusAPY, amountOutMin);
+        }
+    }
+
+    function _distributeRewards(
+        address lender,
+        uint roundId,
+        uint16 rewardAPY,
+        uint amountOutMin
+    ) private {
+        uint balance = IERC20(trade).balanceOf(address(this));
+
+        uint quotation = _getQuotation(lender, roundId, rewardAPY);
+
+        if (balance >= quotation) {
+            IERC20(trade).safeTransfer(lender, quotation);
+            emit ClaimTrade(lender, roundId, quotation);
+        } else {
+            uint amountTrade = _swapExactTokens(
+                lender,
+                roundId,
+                rewardAPY,
+                amountOutMin
+            );
+            emit ClaimTrade(lender, roundId, amountTrade);
         }
     }
 
