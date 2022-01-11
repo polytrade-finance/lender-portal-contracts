@@ -127,17 +127,6 @@ interface ILenderPool {
         returns (uint);
 
     /**
-     * @notice Returns the total amount of rewards for a specific lender on a specific roundId
-     * @dev calculate rewards for stable (stableAPY) and bonus (bonusAPY)
-     * @param lender, address of the lender to be checked
-     * @param roundId, Id of the round to be checked
-     * @return returns the total amount of rewards (stable + bonus) in stable (based on stableInstance)
-     */
-    function totalRewardOf(address lender, uint roundId)
-        external
-        returns (uint);
-
-    /**
      * @dev Emitted when `minimumDeposit` is updated
      */
     event MinimumDepositUpdated(
