@@ -297,25 +297,14 @@ contract LenderPool is ILenderPool, Ownable {
         uint roundId,
         uint amountOutMin
     ) private {
-        Round memory round = _lenderRounds[lender][roundId];
-        if (round.paidTrade) {
-            uint quotation = _getQuotation(
+        bool paidTrade = _lenderRounds[lender][roundId].paidTrade;
+        if (paidTrade) {
+            _distributeRewards(
                 lender,
                 roundId,
-                (round.stableAPY + round.bonusAPY)
+                (round.stableAPY + round.bonusAPY),
+                amountOutMin
             );
-            if (IERC20(trade).balanceOf(address(this)) >= quotation) {
-                IERC20(trade).safeTransfer(lender, quotation);
-                emit ClaimTrade(lender, roundId, quotation);
-            } else {
-                uint amountTrade = _swapExactTokens(
-                    lender,
-                    roundId,
-                    (round.stableAPY + round.bonusAPY),
-                    amountOutMin
-                );
-                emit ClaimTrade(lender, roundId, amountTrade);
-            }
         } else {
             uint amountStable = _calculateRewards(
                 lender,
