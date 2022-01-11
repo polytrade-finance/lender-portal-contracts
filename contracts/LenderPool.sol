@@ -297,8 +297,8 @@ contract LenderPool is ILenderPool, Ownable {
         uint roundId,
         uint amountOutMin
     ) private {
-        bool paidTrade = _lenderRounds[lender][roundId].paidTrade;
-        if (paidTrade) {
+        Round memory round = _lenderRounds[lender][roundId];
+        if (round.paidTrade) {
             _distributeRewards(
                 lender,
                 roundId,
