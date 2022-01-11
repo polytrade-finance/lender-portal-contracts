@@ -79,13 +79,6 @@ interface ILenderPool {
         returns (Round memory);
 
     /**
-     * @notice Returns the stable APY for this pool
-     * @dev returns the stable APY
-     * @return uint16 of the stable APY
-     */
-    function getStableAPY() external view returns (uint16);
-
-    /**
      * @notice Returns the latest round for a specific lender
      * @param lender, address of the lender to be checked
      * @return returns the latest round for a specific Lender
