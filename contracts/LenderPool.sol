@@ -55,7 +55,8 @@ contract LenderPool is ILenderPool, Ownable {
         uint16 stableAPY_,
         uint16 tenure_,
         address stableAddress_,
-        address clientPortal_
+        address clientPortal_,
+        address tradeToken_
     ) {
         stableInstance = IERC20(stableAddress_);
         stableAPY = stableAPY_;
