@@ -106,7 +106,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Can only be called by the owner
      */
     function setTreasuryAddress(address _newTreasury) external onlyOwner {
-        require(_newTreasury != address(0), "Cannot set address(0)");
+        require(_newTreasury != address(0));
         address oldTreasury = treasury;
         treasury = _newTreasury;
         emit NewTreasuryAddress(oldTreasury, _newTreasury);
