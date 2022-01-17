@@ -27,9 +27,6 @@ contract LenderPool is ILenderPool, Ownable {
     /// uint16 StableAPY of the pool
     uint16 public stableAPY;
 
-    /// PRECISION constant for calculation purpose
-    uint private constant PRECISION = 1E6;
-
     /// duration of each round (expressed in number in days)
     uint16 public tenure;
 
