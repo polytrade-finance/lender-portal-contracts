@@ -1,1 +1,1 @@
-# lender-portal-contracts
+# sc-portal-API
