@@ -9,8 +9,8 @@
     "compile": "npx hardhat typechain && npx hardhat compile",
     "lint:ts": "npx eslint '**/*.ts'",
     "lint:ts-fix": "npx eslint '**/*.ts' --fix",
-    "lint:sol": "npx prettier '**/*.{tson,sol,md}' --check && npx solhint 'contracts/**/*.sol'",
-    "lint:sol-fix": "npx prettier '**/*.{tson,sol,md}' --write && npx solhint 'contracts/**/*.sol' --fix",
+    "lint:sol": "npx prettier '**/*.{json,sol,md}' --check && npx solhint 'contracts/**/*.sol'",
+    "lint:sol-fix": "npx prettier '**/*.{json,sol,md}' --write && npx solhint 'contracts/**/*.sol' --fix",
     "lint": "npm run lint:ts && npm run lint:sol",
     "lint:fix": "npm run lint:ts-fix && npm run lint:sol-fix",
     "prepare": "husky install"
