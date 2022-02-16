@@ -68,8 +68,8 @@ contract LenderPool is ILenderPool, Ownable {
         // initialize trade token address
         trade = tradeToken_;
 
-        stableInstance.approve(address(router), ~uint(0));
-        stableInstance.approve(address(clientPortal_), ~uint(0));
+        stableInstance.safeApprove(address(router), ~uint(0));
+        stableInstance.safeApprove(address(clientPortal_), ~uint(0));
     }
 
     /**
