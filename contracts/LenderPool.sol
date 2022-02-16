@@ -58,6 +58,8 @@ contract LenderPool is ILenderPool, Ownable {
         address clientPortal_,
         address tradeToken_
     ) {
+        require(stableAddress_ != address(0) && clientPortal_ != address(0) && tradeToken_ != address(0), "Zero Address");
+
         stableInstance = IERC20(stableAddress_);
         stableAPY = stableAPY_;
         tenure = tenure_;
