@@ -428,7 +428,8 @@ contract LenderPool is ILenderPool, Ownable {
             ? round.endPeriod - round.startPeriod
             : block.timestamp - round.startPeriod;
 
-        uint result = ((rewardAPY * round.amountLent * timePassed) / 365 days);
+        uint year = 365 days;
+        uint result = ((rewardAPY * round.amountLent * timePassed) / year);
         return ((result * PRECISION) / 1E10);
     }
 
