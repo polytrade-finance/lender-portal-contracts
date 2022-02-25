@@ -58,7 +58,12 @@ contract LenderPool is ILenderPool, Ownable {
         address clientPortal_,
         address tradeToken_
     ) {
-        require(stableAddress_ != address(0) && clientPortal_ != address(0) && tradeToken_ != address(0), "Zero Address");
+        require(
+            stableAddress_ != address(0) &&
+                clientPortal_ != address(0) &&
+                tradeToken_ != address(0),
+            "Zero Address"
+        );
 
         stableInstance = IERC20(stableAddress_);
         stableAPY = stableAPY_;
@@ -265,13 +270,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev run `_claimRewards` and `_withdraw`
      * @param lender, address of the lender
      * @param roundId, Id of the round
-     * @param amountOutMin, The minimum amount tokens to receive
      */
-    function withdraw(
-        address lender,
-        uint roundId,
-        uint amountOutMin
-    ) public onlyOwner {
+    function withdraw(address lender, uint roundId) public onlyOwner {
         Round memory round = _lenderRounds[lender][roundId];
         require(
             block.timestamp >= round.endPeriod,
@@ -279,7 +279,7 @@ contract LenderPool is ILenderPool, Ownable {
         );
         uint amountLent = _lenderRounds[lender][roundId].amountLent;
         require(amountLent > 0, "No amount lent");
-        _claimRewards(lender, roundId, amountOutMin);
+        _claimRewards(lender, roundId);
         _withdraw(lender, roundId, amountLent);
     }
 
@@ -292,20 +292,14 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev emits ClaimStable whenever Stable are sent to the lender
      * @param lender, address of the lender
      * @param roundId, Id of the round
-     * @param amountOutMin, The minimum amount tokens to receive
      */
-    function _claimRewards(
-        address lender,
-        uint roundId,
-        uint amountOutMin
-    ) private {
+    function _claimRewards(address lender, uint roundId) private {
         Round memory round = _lenderRounds[lender][roundId];
         if (round.paidTrade) {
             _distributeRewards(
                 lender,
                 roundId,
-                (round.stableAPY + round.bonusAPY),
-                amountOutMin
+                (round.stableAPY + round.bonusAPY)
             );
         } else {
             uint amountStable = _calculateRewards(
@@ -316,32 +310,22 @@ contract LenderPool is ILenderPool, Ownable {
             stableInstance.safeTransfer(lender, amountStable);
             emit ClaimStable(lender, roundId, amountStable);
 
-            _distributeRewards(lender, roundId, round.bonusAPY, amountOutMin);
+            _distributeRewards(lender, roundId, round.bonusAPY);
         }
     }
 
     function _distributeRewards(
         address lender,
         uint roundId,
-        uint16 rewardAPY,
-        uint amountOutMin
+        uint16 rewardAPY
     ) private {
         uint balance = IERC20(trade).balanceOf(address(this));
 
         uint quotation = _getQuotation(lender, roundId, rewardAPY);
 
-        if (balance >= quotation) {
-            IERC20(trade).safeTransfer(lender, quotation);
-            emit ClaimTrade(lender, roundId, quotation);
-        } else {
-            uint amountTrade = _swapExactTokens(
-                lender,
-                roundId,
-                rewardAPY,
-                amountOutMin
-            );
-            emit ClaimTrade(lender, roundId, amountTrade);
-        }
+        require(balance >= quotation, "Not enough balance");
+        IERC20(trade).safeTransfer(lender, quotation);
+        emit ClaimTrade(lender, roundId, quotation);
     }
 
     /**
@@ -362,33 +346,6 @@ contract LenderPool is ILenderPool, Ownable {
         totalLiquidity -= amount;
         stableInstance.safeTransfer(lender, amount);
         emit Withdraw(lender, roundId, amount);
-    }
-
-    /**
-     * @notice Swap Stable for Trade using IUniswap router interface
-     * @dev emits Swapped event (amountStable sent, amountTrade received)
-     * @param lender, address of the lender
-     * @param roundId, Id of the round
-     * @param rewardAPY, rewardAPY
-     * @param amountOutMin, The minimum amount tokens to receive
-     * @return amount TRADE swapped
-     */
-    function _swapExactTokens(
-        address lender,
-        uint roundId,
-        uint16 rewardAPY,
-        uint amountOutMin
-    ) private returns (uint) {
-        uint amountStable = _calculateRewards(lender, roundId, rewardAPY);
-        uint amountTrade = router.swapExactTokensForTokens(
-            amountStable,
-            amountOutMin,
-            _getPath(),
-            lender,
-            block.timestamp
-        )[2];
-        emit Swapped(amountStable, amountTrade);
-        return amountTrade;
     }
 
     /**
