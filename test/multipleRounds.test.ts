@@ -11,7 +11,7 @@ import {
   LenderPool__factory,
   // eslint-disable-next-line node/no-missing-import
 } from "../typechain";
-import { utils } from "ethers";
+import { constants } from "ethers";
 import {
   quickswapRouterAddress,
   TradeAddress,
@@ -95,6 +95,19 @@ describe("LenderPool - Multiple Rounds", function () {
     for (let i = 1; i <= 10; i++) {
       await USDCContract.transfer(addresses[i], amount);
     }
+  });
+
+  it("Should fail deploying LenderPool with address(0)", async function () {
+    LenderPoolFactory = await ethers.getContractFactory("LenderPool");
+    await expect(
+      LenderPoolFactory.deploy(
+        "1000",
+        "0",
+        USDCContract.address,
+        constants.AddressZero,
+        TradeAddress
+      )
+    ).to.be.reverted;
   });
 
   describe("LenderPool - 1 - StableAPY: 10%, USDC, minDeposit: 100 USDC", () => {
@@ -248,9 +261,9 @@ describe("LenderPool - Multiple Rounds", function () {
     });
 
     it("Should fail to withdraw if before the endPeriod", async (user: number = 1) => {
-      await expect(
-        lenderPool.withdraw(addresses[user], 0, utils.parseEther("10"))
-      ).to.be.revertedWith("Round is not finished yet");
+      await expect(lenderPool.withdraw(addresses[user], 0)).to.be.revertedWith(
+        "Round is not finished yet"
+      );
     });
 
     it("Should returns all finished rounds with no finished rounds", async (user: number = 1) => {
@@ -313,31 +326,29 @@ describe("LenderPool - Multiple Rounds", function () {
     it("Should withdraw all finished Rounds", async (user: number = 1) => {
       const balanceUSDCBefore = await USDCContract.balanceOf(addresses[user]);
       expect(balanceUSDCBefore).to.equal(n6("4400"));
-      const balanceTradeBefore = await tradeContract.balanceOf(addresses[user]);
 
       const finishedRounds = await lenderPool.getFinishedRounds(
         addresses[user]
       );
 
       for (const res of finishedRounds) {
-        await lenderPool.withdraw(addresses[user], res, 0);
+        await expect(
+          lenderPool.withdraw(addresses[user], res)
+        ).to.be.revertedWith("Not enough balance");
       }
 
       const balanceUSDCAfter = await USDCContract.balanceOf(addresses[user]);
-      expect(balanceUSDCAfter).to.equal(n6("5005.260273"));
-
-      const balanceTradeAfter = await tradeContract.balanceOf(addresses[user]);
-      expect(balanceTradeAfter).to.be.above(balanceTradeBefore);
+      expect(balanceUSDCAfter).to.equal(n6("4400.000000"));
     });
 
     it("Should returns all finished rounds after withdrawal", async (user: number = 1) => {
       const finishedRounds = await lenderPool.getFinishedRounds(
         addresses[user]
       );
-      expect(finishedRounds.length).to.equal(0);
+      expect(finishedRounds.length).to.equal(5);
     });
 
-    it("Should fail running new round with invalid tenure (0)", async (user: number = 1) => {
+    it("Should fail running new round with invalid tenure (0)", async () => {
       await expect(lenderPool.setTenure(0)).to.be.revertedWith(
         "Invalid tenure"
       );
